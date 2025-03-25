@@ -1,0 +1,41 @@
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+mock-investment/node_modules
+mock-investment/.pnp
+mock-investment/.pnp.*
+mock-investment/.yarn/*
+mock-investment/!.yarn/patches
+mock-investment/!.yarn/plugins
+mock-investment/!.yarn/releases
+mock-investment/!.yarn/versions
+
+# testing
+mock-investment/coverage
+
+# next.js
+mock-investment/.next/
+mock-investment/out/
+
+# production
+mock-investment/build
+
+# misc
+mock-investment/.DS_Store
+mock-investment/*.pem
+
+# debug
+mock-investment/npm-debug.log*
+mock-investment/yarn-debug.log*
+mock-investment/yarn-error.log*
+mock-investment/.pnpm-debug.log*
+
+# env files (can opt-in for committing if needed)
+mock-investment/.env*
+
+# vercel
+mock-investment/.vercel
+
+# typescript
+mock-investment/*.tsbuildinfo
+mock-investment/next-env.d.ts
