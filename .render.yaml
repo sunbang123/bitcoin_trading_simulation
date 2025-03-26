@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: backend
+    env: java
+    buildCommand: ./gradlew build
+    startCommand: ./gradlew bootRun
+    rootDir: backend
+    envVars:
+      - key: JAVA_VERSION
+        value: 17
