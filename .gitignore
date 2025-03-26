@@ -1,6 +1,5 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# === Frontend: mock-investment ===
 
-# dependencies
 mock-investment/node_modules
 mock-investment/.pnp
 mock-investment/.pnp.*
@@ -10,32 +9,56 @@ mock-investment/!.yarn/plugins
 mock-investment/!.yarn/releases
 mock-investment/!.yarn/versions
 
-# testing
 mock-investment/coverage
-
-# next.js
 mock-investment/.next/
 mock-investment/out/
-
-# production
 mock-investment/build
-
-# misc
 mock-investment/.DS_Store
 mock-investment/*.pem
-
-# debug
 mock-investment/npm-debug.log*
 mock-investment/yarn-debug.log*
 mock-investment/yarn-error.log*
 mock-investment/.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
 mock-investment/.env*
-
-# vercel
 mock-investment/.vercel
-
-# typescript
 mock-investment/*.tsbuildinfo
 mock-investment/next-env.d.ts
+
+# === Backend: Spring Boot ===
+
+backend/.gradle/
+backend/build/
+!backend/gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Eclipse/STS
+backend/.apt_generated
+backend/.classpath
+backend/.factorypath
+backend/.project
+backend/.settings
+backend/.springBeans
+backend/.sts4-cache
+backend/bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+# IntelliJ IDEA
+backend/.idea
+backend/*.iws
+backend/*.iml
+backend/*.ipr
+backend/out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# NetBeans
+backend/nbproject/private/
+backend/nbbuild/
+backend/dist/
+backend/nbdist/
+backend/.nb-gradle/
+
+# VS Code
+backend/.vscode/
