@@ -7,6 +7,8 @@ COPY gradle /app/gradle
 COPY . /app
 
 RUN chmod +x gradlew
-RUN ./gradlew build
 
-CMD ["./gradlew", "bootRun"]
+# 캐시 문제 방지를 위해 clean build + 데몬 비활성화
+RUN ./gradlew clean build --no-daemon
+
+CMD ["./gradlew", "bootRun", "--no-daemon"]
