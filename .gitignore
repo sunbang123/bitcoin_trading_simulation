@@ -26,32 +26,44 @@ mock-investment/next-env.d.ts
 
 # === Backend: Spring Boot ===
 
-backend/.gradle/
+# Build
 backend/build/
+backend/.gradle/
 !backend/gradle/wrapper/gradle-wrapper.jar
+
+# Class, binary
+backend/**/*.class
 !**/src/main/**/build/
 !**/src/test/**/build/
-
-# Eclipse/STS
-backend/.apt_generated
-backend/.classpath
-backend/.factorypath
-backend/.project
-backend/.settings
-backend/.springBeans
-backend/.sts4-cache
-backend/bin/
 !**/src/main/**/bin/
 !**/src/test/**/bin/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+# Logs
+backend/*.log
+
+# Environment variables
+backend/.env
+
+# === IDEs ===
 
 # IntelliJ IDEA
-backend/.idea
+backend/.idea/
 backend/*.iws
 backend/*.iml
 backend/*.ipr
 backend/out/
-!**/src/main/**/out/
-!**/src/test/**/out/
+
+# Eclipse / Spring Tool Suite
+backend/.classpath
+backend/.project
+backend/.settings/
+backend/.apt_generated/
+backend/.factorypath/
+backend/.springBeans/
+backend/.sts4-cache/
+backend/bin/
 
 # NetBeans
 backend/nbproject/private/
@@ -62,3 +74,12 @@ backend/.nb-gradle/
 
 # VS Code
 backend/.vscode/
+
+# === OS/General ===
+
+# macOS
+backend/.DS_Store
+backend/__MACOSX/
+
+# Swap / temp
+backend/*.swp
