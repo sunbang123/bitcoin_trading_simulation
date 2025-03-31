@@ -1,14 +1,9 @@
-FROM eclipse-temurin:17-jdk
-
+FROM gradle:8.5-jdk17 AS builder
 WORKDIR /app
-
-COPY build.gradle settings.gradle gradlew /app/
-COPY gradle /app/gradle
-COPY . /app
-
-RUN chmod +x gradlew
-
-# 캐시 문제 방지를 위해 clean build + 데몬 비활성화
+COPY --chown=gradle:gradle . .
 RUN ./gradlew clean build --no-daemon
 
-CMD ["./gradlew", "bootRun", "--no-daemon"]
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
