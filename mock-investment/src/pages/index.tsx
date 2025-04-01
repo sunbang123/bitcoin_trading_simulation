@@ -18,9 +18,9 @@ export default function Home() {
   // API에서 받아올 시세 정보 저장
   const [ticker, setTicker] = useState<any>(null);
 
-  // 페이지 로드 시 API 호출 => 백엔드에서 구현한 ticker 호출
+  // 페이지 로드 시 API 호출 => 백엔드에서 구현한 ticker 호출 (render 에서 배포 완료!)
   useEffect(() => {
-    fetch("http://localhost:8080/api/ticker?market=KRW-BTC")
+    fetch("https://bitcoin-trading-simulation.onrender.com/api/ticker?market=KRW-BTC")
         .then((res) => res.json())
         .then((data) => setTicker(data))
         .catch((err) => console.error("백엔드 fetch 실패:", err));
