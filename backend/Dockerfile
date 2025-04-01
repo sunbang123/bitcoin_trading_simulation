@@ -1,12 +1,9 @@
-FROM eclipse-temurin:17-jdk
-
+FROM gradle:8.5-jdk17 AS builder
 WORKDIR /app
+COPY --chown=gradle:gradle . .
+RUN ./gradlew clean build --no-daemon
 
-COPY build.gradle settings.gradle gradlew /app/
-COPY gradle /app/gradle
-COPY . /app
-
-RUN chmod +x gradlew
-RUN ./gradlew build
-
-CMD ["./gradlew", "bootRun"]
+FROM eclipse-temurin:17-jdk
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
+ENTRYPOINT ["java", "-jar", "app.jar"]
