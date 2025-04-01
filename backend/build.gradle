@@ -35,6 +35,10 @@ dependencies {
 	// Swagger - API 문서 자동화
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
 
+	// h2 의존성
+	runtimeOnly 'com.h2database:h2'
+
+
 }
 
 test {
