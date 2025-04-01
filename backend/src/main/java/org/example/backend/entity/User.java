@@ -35,14 +35,17 @@ public class User {
 
     // 보유 자산과 1대 n 매칭
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Account> accounts = new ArrayList<>();
 
     // 거래내역과 1대 n 매칭
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Fill> fills = new ArrayList<>();
 
     // 거래 방법과 1대 n 매칭
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
     public void updateBalance(double newBalance) {
