@@ -1,4 +1,4 @@
-package org.example.backend.dto;
+package org.example.backend.dto.ticker.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class TickerResponse {
+public class TickerResponseDto {
     private String market;
 
     @JsonProperty("trade_price")

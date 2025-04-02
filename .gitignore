@@ -83,3 +83,6 @@ backend/__MACOSX/
 
 # Swap / temp
 backend/*.swp
+
+# Spring Boot 설정 파일
+backend/src/main/resources/application.yml
