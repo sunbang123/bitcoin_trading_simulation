@@ -110,9 +110,8 @@ export default function Home() {
             {/* 메인 컨텐츠 - 차트 */}
             <div className="md:col-span-2">
               <h2 className="text-xl font-semibold mb-4">차트</h2>
-              <CandleChart symbol={selectedMarket} timeframe="days" />
-            </div>
-          </div>
+              <CandleChart symbol="KRW-BTC" timeframe="weeks" />            </div>
+        </div>
         </div>
       </Layout>
     </div>
