@@ -14,4 +14,10 @@ public class TickerResponseDto {
 
     @JsonProperty("signed_change_rate")
     private double signedChangeRate;
+
+    @JsonProperty("acc_trade_price_24h")
+    private double accTradePrice24h;
+
+    private long timestamp;
 }
+
