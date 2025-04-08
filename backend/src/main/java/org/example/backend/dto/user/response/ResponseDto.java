@@ -1,12 +1,16 @@
 package org.example.backend.dto.user.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.*;
 
 @Getter
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
-public class UserResponseDto {
+public class ResponseDto {
     private Long id;
     private String username;
     private String email;
+
 }
+
+
