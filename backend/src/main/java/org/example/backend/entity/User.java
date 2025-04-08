@@ -10,14 +10,15 @@ import java.util.List;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Builder(toBuilder = true)
+@Builder
+@Table(name = "user")
 public class User {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable  = false)
     private String username;
 
     @Column(nullable = false)
@@ -39,6 +40,11 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
+
+    public void updateUser(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 
     public void updateBalance(double newBalance) {
         this.balance = newBalance;

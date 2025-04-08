@@ -1,7 +1,7 @@
 package org.example.backend.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.backend.dto.user.request.RegisterRequestDto;
+import org.example.backend.dto.user.request.CreateRequestDto;
 import org.example.backend.dto.user.request.UpdateRequestDto;
 import org.example.backend.dto.user.response.ResponseDto;
 import org.example.backend.service.user.*;
@@ -15,25 +15,31 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final RegisterService registerService;
-    private final ReadByEmailService readByEmailService;
-    private final ReadAllService readAllService;
+    private final CreateService createService;
+    private final GetByEmailService getByEmailService;
+    private final GetByUsernameService getByUsernameService;
+    private final GetAllService getAllService;
     private final UpdateService updateService;
     private final DeleteService deleteService;
 
     @PostMapping()
-    public ResponseEntity<ResponseDto> register(@RequestBody RegisterRequestDto dto) {
-        return ResponseEntity.ok(registerService.register(dto));
+    public ResponseEntity<ResponseDto> create(@RequestBody CreateRequestDto dto) {
+        return ResponseEntity.ok(createService.createUser(dto));
     }
 
     @GetMapping("/email/{email}")
     public ResponseEntity<ResponseDto> readByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(readByEmailService.readByEmail(email));
+        return ResponseEntity.ok(getByEmailService.getByEmail(email));
+    }
+
+    @GetMapping("/username/{username}")
+    public ResponseEntity<ResponseDto> getByUsername(@PathVariable String username) {
+        return ResponseEntity.ok(getByUsernameService.getByUsername(username));
     }
 
     @GetMapping("/all")
     public ResponseEntity<List<ResponseDto>> getAllUsers() {
-        List<ResponseDto> users = readAllService.getAllUsers();
+        List<ResponseDto> users = getAllService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 

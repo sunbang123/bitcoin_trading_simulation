@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class ReadAllService {
+public class GetAllService {
 
     private final UserRepository userRepository;
 

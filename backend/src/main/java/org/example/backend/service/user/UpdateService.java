@@ -16,17 +16,11 @@ public class UpdateService {
 
     public ResponseDto updateUser(String email, UpdateRequestDto dto) {
         User existingUser  = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("해당 이메일의 사용자를 찾을 수 없습니다."));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
 
-        User updatedUser = User.builder()
-                .id(existingUser.getId())
-                .username(dto.getUsername())
-                .email(existingUser .getEmail())
-                .password(dto.getPassword())
-                .balance(existingUser .getBalance())
-                .build();
+        existingUser.updateUser(dto.getUsername(), dto.getPassword());
 
-        User savedUser = userRepository.save(updatedUser);
+        User savedUser = userRepository.save(existingUser);
         return new ResponseDto(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail());
     }
 }

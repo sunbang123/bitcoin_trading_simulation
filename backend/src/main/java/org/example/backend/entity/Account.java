@@ -8,6 +8,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(name = "account")
 public class Account {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

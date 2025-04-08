@@ -14,7 +14,7 @@ public class DeleteService {
 
     public void deleteUser(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("해당 이메일의 사용자를 찾을 수 없습니다: " + email));
+                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다: " + email));
         userRepository.delete(user);
     }
 }
