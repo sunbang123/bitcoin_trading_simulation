@@ -38,9 +38,8 @@ dependencies {
 	// h2 의존성
 	runtimeOnly 'com.h2database:h2'
 
-	// PostgreSQL 드라이버 추가 ( supabase 에서 postSQL 로 데이터 관리
-	implementation 'org.postgresql:postgresql:42.6.0'
-
+	// 보안 관련
+	implementation 'org.springframework.boot:spring-boot-starter-security'
 
 }
 

@@ -2,6 +2,9 @@ package org.example.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.backend.entity.enums.CurrencyType;
+
+import java.math.BigDecimal;
 
 @Entity
 @Getter
@@ -14,31 +17,19 @@ public class Account {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 화폐를 의미하는 영문 대문자 코드 ex. BTC, ETH
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String currency;
+    private CurrencyType currency;
 
-    // 주문가능 금액/수량
     @Column(nullable = false)
-    private double balance;
+    private BigDecimal quantity;
 
-    // 주문 중 묶여있는 금액/수량
     @Column(nullable = false)
-    private double locked;
+    private BigDecimal locked;
 
-    // 매수평균가
     @Column(nullable = false)
-    private double avgBuyPrice;
+    private BigDecimal avgBuyPrice;
 
-    // 매수평균가 수정 여부
-    @Column(nullable = false)
-    private boolean avgBuyPriceModified;
-
-    // 평단가 기준 화폐
-    @Column(nullable = false)
-    private String unitCurrency; // KRW
-
-    // User 와 1대 n 매칭
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
@@ -47,11 +38,11 @@ public class Account {
         this.user = user;
     }
 
-    public void updateBalance(double newBalance) {
-        this.balance = newBalance;
+    public void updateQuantity(BigDecimal newQuantity) {
+        this.quantity = newQuantity;
     }
 
-    public void updateLocked(double newLocked) {
+    public void updateLocked(BigDecimal newLocked) {
         this.locked = newLocked;
     }
 }
