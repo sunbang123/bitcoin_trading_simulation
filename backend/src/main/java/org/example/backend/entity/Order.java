@@ -5,7 +5,9 @@ import lombok.*;
 import org.example.backend.entity.enums.OrderState;
 import org.example.backend.entity.enums.OrderType;
 import org.example.backend.entity.enums.Side;
-
+import java.util.List;
+import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -20,19 +22,19 @@ public class Order {
     private Long id;
 
     @Column(nullable = false)
-    private String market; // 예: KRW-BTC
+    private String market;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Side side; // BUY / SELL
+    private Side side;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderType ordType; // LIMIT / MARKET / PRICE
+    private OrderType ordType;
 
-    private double price;
+    private BigDecimal price;
 
-    private double volume;
+    private BigDecimal volume;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -45,7 +47,11 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public static Order create(String market, Side side, OrderType ordType, double price, double volume, User user) {
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Fill> fills = new ArrayList<>();
+
+    public static Order create(String market, Side side, OrderType ordType, BigDecimal price, BigDecimal volume, User user) {
         return Order.builder()
                 .market(market)
                 .side(side)

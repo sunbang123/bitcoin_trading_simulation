@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class DeleteService {
+public class UserDeleteService {
 
     private final UserRepository userRepository;
 

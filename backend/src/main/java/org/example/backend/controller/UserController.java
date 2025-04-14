@@ -1,9 +1,9 @@
 package org.example.backend.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.backend.dto.user.request.CreateRequestDto;
-import org.example.backend.dto.user.request.UpdateRequestDto;
-import org.example.backend.dto.user.response.ResponseDto;
+import org.example.backend.dto.user.request.UserCreateRequestDto;
+import org.example.backend.dto.user.request.UserUpdateRequestDto;
+import org.example.backend.dto.user.response.UserResponseDto;
 import org.example.backend.service.user.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,43 +15,43 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
 
-    private final CreateService createService;
-    private final GetByEmailService getByEmailService;
-    private final GetByUsernameService getByUsernameService;
-    private final GetAllService getAllService;
-    private final UpdateService updateService;
-    private final DeleteService deleteService;
+    private final UserCreateService createService;
+    private final UserGetByEmailService getByEmailService;
+    private final UserGetByUsernameService getByUsernameService;
+    private final UserGetAllService getAllService;
+    private final UserUpdateService updateService;
+    private final UserDeleteService deleteService;
 
     @PostMapping()
-    public ResponseEntity<ResponseDto> create(@RequestBody CreateRequestDto dto) {
+    public ResponseEntity<UserResponseDto> create(@RequestBody UserCreateRequestDto dto) {
         return ResponseEntity.ok(createService.createUser(dto));
     }
 
-    @GetMapping("/email/{email}")
-    public ResponseEntity<ResponseDto> readByEmail(@PathVariable String email) {
+    @GetMapping("/{email}")
+    public ResponseEntity<UserResponseDto> readByEmail(@PathVariable String email) {
         return ResponseEntity.ok(getByEmailService.getByEmail(email));
     }
 
-    @GetMapping("/username/{username}")
-    public ResponseEntity<ResponseDto> getByUsername(@PathVariable String username) {
+    @GetMapping("/{username}")
+    public ResponseEntity<UserResponseDto> getByUsername(@PathVariable String username) {
         return ResponseEntity.ok(getByUsernameService.getByUsername(username));
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<ResponseDto>> getAllUsers() {
-        List<ResponseDto> users = getAllService.getAllUsers();
+    public ResponseEntity<List<UserResponseDto>> getAllUsers() {
+        List<UserResponseDto> users = getAllService.getAllUsers();
         return ResponseEntity.ok(users);
     }
 
-    @PutMapping("/email/{email}")
-    public ResponseEntity<ResponseDto> updateUser(
+    @PutMapping("/{email}")
+    public ResponseEntity<UserResponseDto> updateUser(
             @PathVariable String email,
-            @RequestBody UpdateRequestDto dto
+            @RequestBody UserUpdateRequestDto dto
     ) {
         return ResponseEntity.ok(updateService.updateUser(email, dto));
     }
 
-    @DeleteMapping("/email/{email}")
+    @DeleteMapping("/{email}")
     public ResponseEntity<Void> deleteUser(@PathVariable String email) {
         deleteService.deleteUser(email);
         return ResponseEntity.noContent().build();

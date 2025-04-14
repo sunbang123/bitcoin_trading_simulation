@@ -1,20 +1,24 @@
 package org.example.backend.service.user;
 
 import lombok.RequiredArgsConstructor;
-import org.example.backend.dto.user.request.CreateRequestDto;
-import org.example.backend.dto.user.response.ResponseDto;
+import org.example.backend.dto.user.request.UserCreateRequestDto;
+import org.example.backend.dto.user.response.UserResponseDto;
 import org.example.backend.entity.User;
 import org.example.backend.exception.requestError.DuplicateUserException;
 import org.example.backend.repository.UserRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
-public class CreateService {
+public class UserCreateService {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public ResponseDto createUser(CreateRequestDto dto) {
+    public UserResponseDto createUser(UserCreateRequestDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new DuplicateUserException("이미 존재하는 이메일입니다.");
         }
@@ -23,14 +27,21 @@ public class CreateService {
             throw new DuplicateUserException("이미 존재하는 닉네임입니다.");
         }
 
+        String encodedPassword = passwordEncoder.encode(dto.getPassword());
+
         User user = User.builder()
                 .username(dto.getUsername())
-                .password(dto.getPassword())
+                .password(encodedPassword)
                 .email(dto.getEmail())
-                .balance(0.0) // 초기 자금
+                .balance(BigDecimal.ZERO) // 초기 자금
                 .build();
 
         User savedUser = userRepository.save(user);
-        return new ResponseDto(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail());
+        return UserResponseDto.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .balance(user.getBalance())
+                .build();
     }
 }

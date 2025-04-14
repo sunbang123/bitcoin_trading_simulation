@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.example.backend.entity.enums.Side;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -18,17 +19,17 @@ public class Fill {
     private Long id;
 
     @Column(nullable = false)
-    private String market; // 예: KRW-BTC
+    private String market;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Side side; // BUY / SELL
+    private Side side;
 
     @Column(nullable = false)
-    private double price;
+    private BigDecimal price;
 
     @Column(nullable = false)
-    private double volume;
+    private BigDecimal volume;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -37,7 +38,11 @@ public class Fill {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public static Fill of(String market, Side side, double price, double volume, User user) {
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_id", nullable = false)
+    private Order order;
+
+    public static Fill of(String market, Side side, BigDecimal price, BigDecimal volume, User user) {
         return Fill.builder()
                 .market(market)
                 .side(side)
