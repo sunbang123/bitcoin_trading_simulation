@@ -3,7 +3,7 @@ package org.example.backend.service.user;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.user.response.UserResponseDto;
 import org.example.backend.entity.User;
-import org.example.backend.exception.requestError.UserNotFoundException;
+import org.example.backend.exception.user.UserNotFoundException;
 import org.example.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -15,7 +15,7 @@ public class UserGetByUsernameService {
 
     public UserResponseDto getByUsername(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다." + username));
+                .orElseThrow(() -> new UserNotFoundException(username));
         return toDto(user);
     }
 

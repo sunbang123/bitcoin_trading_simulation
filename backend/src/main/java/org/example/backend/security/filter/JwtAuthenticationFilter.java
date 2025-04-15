@@ -1,5 +1,6 @@
 package org.example.backend.security.filter;
 
+import org.example.backend.exception.auth.TokenMissingException;
 import org.example.backend.security.token.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -30,26 +31,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String token = resolveToken(request);
-
-        if (token != null && jwtTokenProvider.validateToken(token)) {
-            Claims claims = jwtTokenProvider.parseClaims(token);
-
-            String email = claims.getSubject();
-            String role = claims.get("role", String.class);
-
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            email,
-                            null,
-                            Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role)));
-
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (token == null) {
+            throw new TokenMissingException("Authorization 헤더가 없습니다.");
         }
+
+        jwtTokenProvider.validateToken(token);
+
+        Claims claims = jwtTokenProvider.parseClaims(token);
+        String email = claims.getSubject();
+        String role = claims.get("role", String.class);
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        email,
+                        null,
+                        Collections.singleton(new SimpleGrantedAuthority("ROLE_" + role)));
+
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
     }
+
 
     private String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");
