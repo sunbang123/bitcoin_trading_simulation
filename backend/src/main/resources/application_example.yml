@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: # 데이터베이스 주소
+    username: # 데이터베이스 유저 이름
+    password: # 데이터베이스 비밀 번호
+    driver-class-name: com.mysql.cj.jdbc.Driver # 사용하는 데이터베이스 종류
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+jwt:
+  secret: # jwt 에서 사용할 키 값 ( 이걸 기준으로 키 생성 )
+  expiration: # 만료 시간, 3600000 = 1시간 (ms)
