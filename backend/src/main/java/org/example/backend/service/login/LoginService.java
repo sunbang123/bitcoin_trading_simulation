@@ -21,7 +21,7 @@ public class LoginService {
 
     public LoginResponseDto login(LoginRequestDto dto) {
         User user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow((UserNotFoundException::new));
+                .orElseThrow(() -> new UserNotFoundException("해당 이메일을 사용하는 유저를 찾을 수 없습니다." + dto.getEmail()));
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
             throw new InvalidPasswordException();
