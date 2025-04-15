@@ -15,7 +15,7 @@ public class UserGetByUsernameService {
 
     public UserResponseDto getByUsername(String username) {
         User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException(username));
+                .orElseThrow(() -> new UserNotFoundException("해당 닉네임을 사용하는 유저를 찾을 수 없습니다." + username));
         return toDto(user);
     }
 

@@ -1,6 +1,7 @@
 package org.example.backend.security.filter;
 
 import org.example.backend.exception.auth.TokenMissingException;
+import org.example.backend.security.config.AuthWhitelist;
 import org.example.backend.security.token.JwtTokenProvider;
 import io.jsonwebtoken.Claims;
 import jakarta.servlet.FilterChain;
@@ -30,6 +31,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
+
+        for (String pattern :
+        AuthWhitelist.NO_AUTH_PATHS) {
+            if (pathMatches(path, pattern)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+        }
+
         String token = resolveToken(request);
         if (token == null) {
             throw new TokenMissingException("Authorization 헤더가 없습니다.");
@@ -53,6 +64,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
+    private boolean pathMatches(String requestPath, String pattern) {
+        return requestPath.startsWith(pattern.replace("/**", ""));
+    }
 
     private String resolveToken(HttpServletRequest request) {
         String bearer = request.getHeader("Authorization");

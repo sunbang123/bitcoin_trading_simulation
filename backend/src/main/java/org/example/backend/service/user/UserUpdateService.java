@@ -18,7 +18,7 @@ public class UserUpdateService {
 
     public UserResponseDto updateUser(String email, UserUpdateRequestDto dto) {
         User user  = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException(email));
+                .orElseThrow(() -> new UserNotFoundException("해당 이메일을 사용하는 유저를 찾을 수 없습니다." + email));
 
         String newPassword = dto.getPassword() != null ?
                 passwordEncoder.encode(dto.getPassword()) : user.getPassword();
