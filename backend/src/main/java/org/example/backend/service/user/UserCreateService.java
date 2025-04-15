@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.user.request.UserCreateRequestDto;
 import org.example.backend.dto.user.response.UserResponseDto;
 import org.example.backend.entity.User;
+import org.example.backend.entity.enums.Role;
 import org.example.backend.exception.requestError.DuplicateUserException;
 import org.example.backend.repository.UserRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,10 +34,12 @@ public class UserCreateService {
                 .username(dto.getUsername())
                 .password(encodedPassword)
                 .email(dto.getEmail())
-                .balance(BigDecimal.ZERO) // 초기 자금
+                .balance(BigDecimal.ZERO)
+                .role(Role.USER)
                 .build();
 
         User savedUser = userRepository.save(user);
+
         return UserResponseDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
