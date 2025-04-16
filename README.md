@@ -9,3 +9,5 @@
 - [Trello](https://trello.com/b/FAkQB5LI/bitcoin)
 
 - [Project Prototype](https://github.com/kimhaneu1/bitcoin_trading_simulation/wiki/Project-Prototype)
+
+- -[ERD 설계](https://www.erdcloud.com/d/4pFNJiMrzmCT5s4KL)
