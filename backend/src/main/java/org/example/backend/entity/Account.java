@@ -17,10 +17,6 @@ public class Account {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private CurrencyType currency;
-
     @Column(nullable = false)
     private BigDecimal quantity;
 
@@ -33,6 +29,10 @@ public class Account {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private User user;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "market_id")
+    private Market market;
 
     protected void setUser(User user) {
         this.user = user;

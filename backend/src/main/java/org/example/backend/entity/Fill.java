@@ -18,9 +18,6 @@ public class Fill {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String market;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Side side;
@@ -42,14 +39,8 @@ public class Fill {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    public static Fill of(String market, Side side, BigDecimal price, BigDecimal volume, User user) {
-        return Fill.builder()
-                .market(market)
-                .side(side)
-                .price(price)
-                .volume(volume)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .build();
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "market_id", nullable = false)
+    private Market market;
+
 }
