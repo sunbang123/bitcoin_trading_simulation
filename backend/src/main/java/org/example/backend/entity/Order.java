@@ -21,9 +21,6 @@ public class Order {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String market;
-
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Side side;
@@ -51,24 +48,8 @@ public class Order {
     @Builder.Default
     private List<Fill> fills = new ArrayList<>();
 
-    public static Order create(String market, Side side, OrderType ordType, BigDecimal price, BigDecimal volume, User user) {
-        return Order.builder()
-                .market(market)
-                .side(side)
-                .ordType(ordType)
-                .price(price)
-                .volume(volume)
-                .state(OrderState.WAIT)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .build();
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "market_id", nullable = false)
+    private Market market;
 
-    public void complete() {
-        this.state = OrderState.DONE;
-    }
-
-    public void cancel() {
-        this.state = OrderState.CANCEL;
-    }
 }
