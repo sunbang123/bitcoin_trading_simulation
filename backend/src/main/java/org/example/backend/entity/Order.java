@@ -5,7 +5,9 @@ import lombok.*;
 import org.example.backend.entity.enums.OrderState;
 import org.example.backend.entity.enums.OrderType;
 import org.example.backend.entity.enums.Side;
-
+import java.util.List;
+import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -19,20 +21,17 @@ public class Order {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private String market; // 예: KRW-BTC
+    private Side side;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private Side side; // BUY / SELL
+    private OrderType ordType;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private OrderType ordType; // LIMIT / MARKET / PRICE
+    private BigDecimal price;
 
-    private double price;
-
-    private double volume;
+    private BigDecimal volume;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -45,24 +44,12 @@ public class Order {
     @JoinColumn(name = "user_id")
     private User user;
 
-    public static Order create(String market, Side side, OrderType ordType, double price, double volume, User user) {
-        return Order.builder()
-                .market(market)
-                .side(side)
-                .ordType(ordType)
-                .price(price)
-                .volume(volume)
-                .state(OrderState.WAIT)
-                .createdAt(LocalDateTime.now())
-                .user(user)
-                .build();
-    }
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Fill> fills = new ArrayList<>();
 
-    public void complete() {
-        this.state = OrderState.DONE;
-    }
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "market_id", nullable = false)
+    private Market market;
 
-    public void cancel() {
-        this.state = OrderState.CANCEL;
-    }
 }

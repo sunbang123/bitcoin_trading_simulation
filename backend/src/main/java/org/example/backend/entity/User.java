@@ -2,7 +2,9 @@ package org.example.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.example.backend.entity.enums.Role;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "user")
+@Table(name = "'user'")
 public class User {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,7 +29,11 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    private double balance;
+    private BigDecimal balance;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
@@ -46,7 +52,7 @@ public class User {
         this.password = password;
     }
 
-    public void updateBalance(double newBalance) {
+    public void updateBalance(BigDecimal newBalance) {
         this.balance = newBalance;
     }
 
