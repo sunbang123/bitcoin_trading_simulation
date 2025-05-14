@@ -1,7 +1,7 @@
 package org.example.backend.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.example.backend.market.dto.response.TickerResponseDto;
+import org.example.backend.dto.market.response.TickerResponseDto;
 import org.example.backend.service.MarketService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
