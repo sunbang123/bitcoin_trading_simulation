@@ -19,7 +19,7 @@ public class SwaggerConfig {
                         .title("Bitcoin Trading Simulation API")
                         .version("1.0")
                         .description("비트코인 실시간 시세 조회 및 시뮬레이션 백엔드 API입니다."))
-                .addSecurityItem(new SecurityRequirement().addList("bearerAuth")) // ✅ 보안 요구사항 추가
+                .addSecurityItem(new SecurityRequirement().addList("bearerAuth"))
                 .components(new Components()
                         .addSecuritySchemes("bearerAuth",
                                 new SecurityScheme()

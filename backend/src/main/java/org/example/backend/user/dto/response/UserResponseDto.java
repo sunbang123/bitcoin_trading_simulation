@@ -16,5 +16,3 @@ public class UserResponseDto {
     private String email;
     private BigDecimal balance;
 }
-
-

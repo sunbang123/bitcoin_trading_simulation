@@ -1,22 +1,19 @@
 package org.example.backend.order.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.example.backend.order.enums.OrderType;
 import org.example.backend.order.enums.Side;
 
 import java.math.BigDecimal;
 
+@Getter
+@NoArgsConstructor
 public class OrderCreateRequestDto {
-    @NotBlank
-    private String market;
-
-    @NotNull
-    private Side side;
-
-    @NotNull
-    private OrderType orderType;
-
-    private BigDecimal price;
-    private BigDecimal volume;
+    @NotNull private Long marketId;
+    @NotNull private BigDecimal price;
+    @NotNull private BigDecimal volume;
+    @NotNull private OrderType orderType;
+    @NotNull private Side side;
 }

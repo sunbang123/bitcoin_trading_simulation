@@ -10,10 +10,10 @@ import org.springframework.http.HttpStatus;
 @ToString
 @RequiredArgsConstructor
 public enum AuthErrorCode implements BaseErrorCode {
-    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "4010", "Invalid JWT token"),
-    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "4011", "JWT token has expired"),
-    TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "4012", "JWT token is missing"),
-    ACCESS_DENIED(HttpStatus.FORBIDDEN, "4030", "Access denied");
+    INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "1200", "Invalid JWT token"),
+    EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "1201", "JWT token has expired"),
+    TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "1202", "JWT token is missing"),
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "1203", "Access denied");
 
     private final HttpStatus httpStatus;
     private final String code;

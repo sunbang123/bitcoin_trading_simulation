@@ -1,4 +1,4 @@
-package org.example.backend.common.exception.global;
+package org.example.backend.common.exception.market;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -9,10 +9,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @ToString
 @RequiredArgsConstructor
-public enum GlobalErrorCode implements BaseErrorCode {
-    INVALID_REQUEST(HttpStatus.BAD_REQUEST, "1000", "Invalid request"),
-    INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "1001", "Internal server error");
+public enum MarketErrorCode implements BaseErrorCode {
 
+    MARKET_NOT_FOUND(HttpStatus.NOT_FOUND, "1300", "Market not found"),;
 
     private final HttpStatus httpStatus;
     private final String code;
