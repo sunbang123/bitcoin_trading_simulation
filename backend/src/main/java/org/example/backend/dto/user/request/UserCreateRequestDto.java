@@ -12,7 +12,7 @@ import org.example.backend.security.ValidPassword;
 public class UserCreateRequestDto {
 
     @NotBlank(message = "닉네임을 입력해주세요.")
-    @Size(min = 4, max = 10, message = "최소 4글자, 최대 10글자 제합입니다.")
+    @Size(min = 4, max = 10, message = "최소 4글자, 최대 10글자 제한입니다.")
     private String username;
 
     @NotBlank(message = "비밀번호를 입력해주세요.")

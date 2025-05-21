@@ -1,9 +1,9 @@
 package org.example.backend.dto.order.response;
 
+import org.example.backend.dto.fill.response.FillResponseDto;
 import org.example.backend.entity.enums.OrderState;
 import org.example.backend.entity.enums.OrderType;
 import org.example.backend.entity.enums.Side;
-import org.example.backend.fill.dto.response.FillResponseDto;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

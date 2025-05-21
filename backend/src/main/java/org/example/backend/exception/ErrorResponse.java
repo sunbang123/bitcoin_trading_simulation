@@ -17,4 +17,12 @@ public class ErrorResponse {
                 errorCode.getMessage()
         );
     }
+
+    public static ErrorResponse of(ErrorCode errorcode, String message) {
+        return new ErrorResponse(
+                errorcode.getHttpStatus().value(),
+                errorcode.getCode(),
+                message
+        );
+    }
 }

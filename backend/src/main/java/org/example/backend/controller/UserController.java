@@ -1,5 +1,6 @@
 package org.example.backend.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.service.UserService;
 import org.example.backend.dto.user.request.UserCreateRequestDto;
@@ -16,18 +17,18 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping()
-    public ResponseEntity<UserResponseDto> create(@RequestBody UserCreateRequestDto dto) {
+    public ResponseEntity<UserResponseDto> createUser(@RequestBody @Valid UserCreateRequestDto dto) {
         return ResponseEntity.ok(userService.createUser(dto));
     }
 
-    @GetMapping("/{email}")
-    public ResponseEntity<UserResponseDto> readByEmail(@PathVariable String email) {
-        return ResponseEntity.ok(userService.getByEmail(email));
+    @GetMapping("/email/{email}")
+    public ResponseEntity<UserResponseDto> getByEmail(@PathVariable String email) {
+        return ResponseEntity.ok(userService.getUserByEmail(email));
     }
 
-    @GetMapping("/{username}")
+    @GetMapping("/username/{username}")
     public ResponseEntity<UserResponseDto> getByUsername(@PathVariable String username) {
-        return ResponseEntity.ok(userService.getByUsername(username));
+        return ResponseEntity.ok(userService.getUserByUsername(username));
     }
 
     @PutMapping("/{email}")

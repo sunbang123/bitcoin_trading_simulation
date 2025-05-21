@@ -19,7 +19,11 @@ public enum ErrorCode {
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "1200", "Invalid JWT token"),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "1201", "JWT token has expired"),
     TOKEN_MISSING(HttpStatus.UNAUTHORIZED, "1202", "JWT token is missing"),
-    ACCESS_DENIED(HttpStatus.FORBIDDEN, "1203", "Access denied"),
+    TOKEN_TYPE_MISMATCH_EXCEPTION(HttpStatus.UNAUTHORIZED, "1203", "JWT token type mismatch"),
+    ACCESS_DENIED(HttpStatus.FORBIDDEN, "1204", "Access denied"),
+    TOKEN_NOT_FOUND(HttpStatus.NOT_FOUND, "1205", "Refresh token not found"),
+    TOKEN_REVOKED(HttpStatus.UNAUTHORIZED, "1206", "Refresh token revoked"),
+    ALREADY_LOGOUT(HttpStatus.BAD_REQUEST, "1207", "Already log out"),
 
     MARKET_NOT_FOUND(HttpStatus.NOT_FOUND, "1300", "Market not found")
     ;

@@ -2,7 +2,6 @@ package org.example.backend.security.jwt;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.ServletException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -16,8 +15,11 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException)
-            throws IOException, ServletException {
-
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "로그인이 필요합니다.");
+            throws IOException {
+        String message = authException.getMessage();
+        if (message == null || message.isBlank()) {
+            message = "보안에서 예상 못한 오류";
+        }
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, message);
     }
 }

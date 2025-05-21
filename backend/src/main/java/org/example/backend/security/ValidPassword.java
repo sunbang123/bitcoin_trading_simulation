@@ -10,7 +10,7 @@ import java.lang.annotation.*;
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ValidPassword {
-    String message() default "왜 오류임?";
+    String message() default "예상 못한 오류";
     Class<?>[] groups() default {};
     Class<? extends Payload>[] payload() default {};
 }

@@ -27,4 +27,8 @@ public class RefreshToken {
 
     @Column(name = "revoked", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean revoked;      // 토큰 취소 여부
+
+    public void revoke() {
+        this.revoked = true;
+    }
 }

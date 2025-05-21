@@ -12,15 +12,18 @@ import org.example.backend.dto.user.request.UserUpdateRequestDto;
 import org.example.backend.dto.user.response.UserResponseDto;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
 
+    @Transactional
     public UserResponseDto createUser(UserCreateRequestDto dto) {
         if (userRepository.existsByEmail(dto.getEmail())) {
             throw new DuplicateEmailException("이미 존재하는 Email입니다.");
@@ -42,50 +45,39 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
 
-        return UserResponseDto.builder()
-                .id(savedUser.getId())
-                .username(savedUser.getUsername())
-                .email(savedUser.getEmail())
-                .balance(savedUser.getBalance())
-                .build();
+        return toDto(savedUser);
     }
 
+    @Transactional
     public void deleteUser(String email) {
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("해당 이메일을 사용하는 사용자를 찾을 수 없습니다."));
         userRepository.delete(user);
     }
 
-    public UserResponseDto getByEmail(String email) {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("해당 이메일을 사용하는 사용자를 찾을 수 없습니다."));
-        return toDto(user);
+    public UserResponseDto getUserByEmail(String email) {
+        return toDto(findUserByEmail(email));
     }
 
-    public UserResponseDto getByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserNotFoundException("해당 닉네임을 사용하는 사용자를 찾을 수 없습니다."));
-        return toDto(user);
+    public UserResponseDto getUserByUsername(String username) {
+        return toDto(findUserByUsername(username));
     }
 
+    @Transactional
     public UserResponseDto updateUser(String email, UserUpdateRequestDto dto) {
-        User user  = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("해당 이메일을 사용하는 사용자를 찾을 수 없습니다."));
+        User user  = findUserByEmail(email);
 
-        String newPassword = dto.getPassword() != null ?
-                passwordEncoder.encode(dto.getPassword()) : user.getPassword();
+        String newPassword = dto.getPassword() != null
+                ? passwordEncoder.encode(dto.getPassword())
+                : user.getPassword();
 
-        String newUsername = dto.getUsername() != null ?
-                dto.getUsername() : user.getUsername();
+        String newUsername = dto.getUsername() != null
+                ? dto.getUsername()
+                : user.getUsername();
 
         user.updateUser(newUsername, newPassword);
 
-        return UserResponseDto.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .balance(user.getBalance())
-                .build();
+        return toDto(user);
     }
 
     private UserResponseDto toDto(User user) {
@@ -95,5 +87,15 @@ public class UserService {
                 .email(user.getEmail())
                 .balance(user.getBalance())
                 .build();
+    }
+
+    private User findUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new UserNotFoundException("해당 이메일을 사용하는 사용자를 찾을 수 없습니다."));
+    }
+
+    private User findUserByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UserNotFoundException("해당 닉네임을 사용하는 사용자를 찾을 수 없습니다."));
     }
 }
