@@ -81,7 +81,7 @@ public class JwtTokenProvider {
         Date expiry = new Date(now.getTime() + refreshTokenExpirationMs);
 
         String token = Jwts.builder()
-                .setId(jti)
+                .setId(jti) // 필요없음
                 .setSubject(email)
                 .claim("role", role)
                 .claim("type", "refresh")

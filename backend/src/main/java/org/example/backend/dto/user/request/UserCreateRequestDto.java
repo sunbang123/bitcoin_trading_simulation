@@ -11,16 +11,16 @@ import org.example.backend.security.ValidPassword;
 @NoArgsConstructor
 public class UserCreateRequestDto {
 
-    @NotBlank(message = "닉네임을 입력해주세요.")
+    @NotBlank
     @Size(min = 4, max = 10, message = "최소 4글자, 최대 10글자 제한입니다.")
     private String username;
 
-    @NotBlank(message = "비밀번호를 입력해주세요.")
+    @NotBlank
     @ValidPassword
     @Size(min = 8, max = 20, message = "최소 8글자, 최대 20글자 제한입니다.")
     private String password;
 
-    @NotBlank(message = "이메일을 입력해주세요.")
+    @NotBlank
     @Size(min = 5, max = 30, message = "최소 5글자, 최대 30글자 제한입니다.")
     @Email(message = "올바른 이메일 형식이 아닙니다.")
     private String email;

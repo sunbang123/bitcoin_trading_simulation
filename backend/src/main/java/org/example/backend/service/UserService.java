@@ -33,13 +33,15 @@ public class UserService {
             throw new DuplicateUsernameException("이미 존재하는 닉네임입니다.");
         }
 
+        // 비밀번호 검증 로직
+
         String encodedPassword = passwordEncoder.encode(dto.getPassword());
 
         User user = User.builder()
                 .username(dto.getUsername())
                 .password(encodedPassword)
                 .email(dto.getEmail())
-                .balance(BigDecimal.ZERO)
+                .balance(new BigDecimal("10000000"))
                 .role(Role.USER)
                 .build();
 

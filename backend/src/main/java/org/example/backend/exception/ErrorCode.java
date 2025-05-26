@@ -25,7 +25,7 @@ public enum ErrorCode {
     TOKEN_REVOKED(HttpStatus.UNAUTHORIZED, "1206", "Refresh token revoked"),
     ALREADY_LOGOUT(HttpStatus.BAD_REQUEST, "1207", "Already log out"),
 
-    MARKET_NOT_FOUND(HttpStatus.NOT_FOUND, "1300", "Market not found")
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "1300", "Order not found")
     ;
 
     private final HttpStatus httpStatus;

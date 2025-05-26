@@ -37,14 +37,6 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Account> accounts = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<Fill> fills = new ArrayList<>();
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
     public void updateUser(String username, String password) {
@@ -54,10 +46,5 @@ public class User {
 
     public void updateBalance(BigDecimal newBalance) {
         this.balance = newBalance;
-    }
-
-    public void addAccount(Account account) {
-        this.accounts.add(account);
-        account.setUser(this);
     }
 }

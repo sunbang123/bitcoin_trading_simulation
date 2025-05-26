@@ -1,22 +1,21 @@
 package org.example.backend.dto.order.response;
 
-import org.example.backend.dto.fill.response.FillResponseDto;
-import org.example.backend.entity.enums.OrderState;
-import org.example.backend.entity.enums.OrderType;
-import org.example.backend.entity.enums.Side;
+import lombok.Builder;
+import org.example.backend.entity.enums.ExecutionType;
+import org.example.backend.entity.enums.OrderStatus;
+import org.example.backend.entity.enums.TradeType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
+@Builder
 public class OrderResponseDto {
-    private Long id;
+    private Long orderId;
     private String market;
-    private Side side;
-    private OrderType orderType;
-    private BigDecimal price;
-    private BigDecimal volume;
-    private OrderState state;
-    private LocalDateTime createdAt;
-    private List<FillResponseDto> fills;
+    private TradeType tradeType;
+    private ExecutionType executionType;
+    private BigDecimal quantity;
+    private BigDecimal priceAtOrderTime;
+    private LocalDateTime orderedAt;
+    private OrderStatus status;
 }

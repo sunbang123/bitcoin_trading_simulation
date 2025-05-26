@@ -1,5 +1,6 @@
 package org.example.backend.entity.enums;
 
-public enum Side {
-    BUY, SELL
+public enum TradeType {
+    BUY,
+    SELL
 }
