@@ -5,7 +5,7 @@ import org.example.backend.exception.requestError.BusinessException;
 
 public class DuplicateEmailException extends BusinessException {
 
-    public DuplicateEmailException(String message) {
-        super(message, ErrorCode.DUPLICATE_EMAIL);
+    public DuplicateEmailException() {
+        super(ErrorCode.DUPLICATE_EMAIL);
     }
 }
