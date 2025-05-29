@@ -27,13 +27,13 @@ public class Order {
     private String market;
 
     @Enumerated(EnumType.STRING)
-    private OrderStatus status;
+    private OrderStatus status; // PENDING, COMPLETED
 
     @Enumerated(EnumType.STRING)
-    private TradeType tradeType;
+    private TradeType tradeType; // BUY, SELL
 
     @Enumerated(EnumType.STRING)
-    private ExecutionType executionType;
+    private ExecutionType executionType; // MARKET, LIMIT
 
     private BigDecimal quantity;
     private BigDecimal priceAtOrderTime;

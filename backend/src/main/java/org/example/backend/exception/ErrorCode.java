@@ -14,7 +14,7 @@ public enum ErrorCode {
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "1101", "User not found"),
     USER_LIST_EMPTY(HttpStatus.NOT_FOUND, "1102", "User list is empty"),
     DUPLICATE_EMAIL(HttpStatus.CONFLICT, "1103", "Email already exists"),
-    DUPLICATE_USERNAME(HttpStatus.CONFLICT, "1104", "Username already exists"),
+    DUPLICATE_PHONE_NUMBER(HttpStatus.CONFLICT, "1104", "Phone number already exists"),
 
     INVALID_TOKEN(HttpStatus.UNAUTHORIZED, "1200", "Invalid JWT token"),
     EXPIRED_TOKEN(HttpStatus.UNAUTHORIZED, "1201", "JWT token has expired"),

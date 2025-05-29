@@ -9,13 +9,12 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Builder
-public class OrderResponseDto {
+public class OrderCreateResponseDto {
     private Long orderId;
     private String market;
     private TradeType tradeType;
     private ExecutionType executionType;
     private BigDecimal quantity;
-    private BigDecimal priceAtOrderTime;
     private LocalDateTime orderedAt;
     private OrderStatus status;
 }

@@ -5,6 +5,7 @@ import lombok.*;
 import org.example.backend.entity.enums.Role;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,23 +14,30 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "'user'")
+@Table(name = "users")
 public class User {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private Long id;
 
-    @Column(unique = true, nullable  = false)
+    @Column(name = "user_name", nullable  = false)
     private String username;
-
-    @Column(nullable = false)
-    private String password;
 
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(name = "phone_number", unique = true, nullable = false)
+    private String phoneNumber;
+
+    @Column(nullable = false)
+    private String password;
+
     private BigDecimal balance;
+
+    @Column(name = "registered_at", nullable = false, updatable = false)
+    private LocalDateTime registeredAt;
+
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -43,7 +51,6 @@ public class User {
         this.username = username;
         this.password = password;
     }
-
     public void updateBalance(BigDecimal newBalance) {
         this.balance = newBalance;
     }

@@ -23,9 +23,6 @@ public class OrderCreateRequestDto {
     @NotNull
     private BigDecimal quantity;
 
-    @NotNull
-    private BigDecimal executionPrice;
-
     // LIMIT일 경우 필수, MARKET일 경우 null 가능
     private BigDecimal limitPrice;
 }
