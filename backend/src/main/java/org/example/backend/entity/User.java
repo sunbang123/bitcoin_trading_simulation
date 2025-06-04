@@ -33,11 +33,11 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    private BigDecimal balance;
-
     @Column(name = "registered_at", nullable = false, updatable = false)
     private LocalDateTime registeredAt;
 
+    @Column(nullable = false, precision = 19, scale = 2)
+    private BigDecimal krwBalance;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -47,11 +47,16 @@ public class User {
     @Builder.Default
     private List<Order> orders = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Asset> assets = new ArrayList<>();
+
     public void updateUser(String username, String password) {
         this.username = username;
         this.password = password;
     }
-    public void updateBalance(BigDecimal newBalance) {
-        this.balance = newBalance;
+
+    public void updateKrwBalance(BigDecimal amount) {
+        this.krwBalance = this.krwBalance.add(amount);
     }
 }

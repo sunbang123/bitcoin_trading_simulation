@@ -2,9 +2,9 @@ package org.example.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.example.backend.entity.enums.ExecutionType;
-import org.example.backend.entity.enums.TradeType;
+import org.example.backend.entity.enums.OrderMethod;
 import org.example.backend.entity.enums.OrderStatus;
+import org.example.backend.entity.enums.OrderType;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -14,28 +14,47 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
-@Table(name = "`order`")
 public class Order {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private String market;
+    @Column(nullable = false)
+    private String coinSymbol;
 
-    @Enumerated(EnumType.STRING)
-    private OrderStatus status; // PENDING, COMPLETED
-
-    @Enumerated(EnumType.STRING)
-    private TradeType tradeType; // BUY, SELL
-
-    @Enumerated(EnumType.STRING)
-    private ExecutionType executionType; // MARKET, LIMIT
-
+    @Column(nullable = false, precision = 19, scale = 8)
     private BigDecimal quantity;
-    private BigDecimal priceAtOrderTime;
-    private LocalDateTime orderedAt;
+
+    @Column(precision = 19, scale = 8)
+    private BigDecimal price; // 주문 당시 지정한 가격 (시장가일 경우 생략 가능)
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderType orderType;// BUY, SELL
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderMethod orderMethod; // MARKET, LIMIT
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private OrderStatus orderStatus; // PENDING, COMPLETED, CANCELED
+
+    @Column(nullable = false)
+    private LocalDateTime createdAt;
+
+    public void updateOrder(BigDecimal newPrice, BigDecimal newQuantity) {
+        this.price = newPrice;
+        this.quantity = newQuantity;
+    }
+
+    public void markAsCompleted() {
+        this.orderStatus = OrderStatus.COMPLETED;
+    }
+
 }

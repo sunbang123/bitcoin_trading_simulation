@@ -1,6 +1,6 @@
 package org.example.backend.entity.enums;
 
-public enum TradeType {
+public enum OrderType {
     BUY,
     SELL
 }

@@ -2,15 +2,15 @@ package org.example.backend.service;
 
 import lombok.RequiredArgsConstructor;
 import org.example.backend.dto.order.request.OrderCreateRequestDto;
-import org.example.backend.dto.order.response.OrderCreateResponseDto;
-import org.example.backend.dto.order.response.OrderGetResponseDto;
-import org.example.backend.dto.order.response.ProfitResponseDto;
+import org.example.backend.dto.order.request.OrderUpdateRequestDto;
+import org.example.backend.dto.order.response.OrderHistoryResponseDto;
+import org.example.backend.entity.Asset;
 import org.example.backend.entity.Order;
 import org.example.backend.entity.User;
-import org.example.backend.entity.enums.ExecutionType;
+import org.example.backend.entity.enums.OrderMethod;
 import org.example.backend.entity.enums.OrderStatus;
-import org.example.backend.entity.enums.TradeType;
-import org.example.backend.exception.requestError.order.OrderNotFoundException;
+import org.example.backend.entity.enums.OrderType;
+import org.example.backend.repository.AssetRepository;
 import org.example.backend.repository.OrderRepository;
 import org.example.backend.security.SecurityUtils;
 import org.springframework.stereotype.Service;
@@ -19,202 +19,187 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class OrderService {
-
     private final OrderRepository orderRepository;
+    private final AssetRepository assetRepository;
     private final SecurityUtils securityUtils;
+    private final UpbitPriceService priceService;
 
-    @Transactional
-    public OrderCreateResponseDto createOrder(OrderCreateRequestDto dto) {
+    public OrderHistoryResponseDto createOrder(OrderCreateRequestDto dto) {
         User user = securityUtils.getCurrentUser();
-        OrderStatus status;
 
-        if (dto.getExecutionType() == ExecutionType.MARKET) {
-            status = OrderStatus.COMPLETED;
-        }
-        else {
-            if (dto.getLimitPrice() == null) {
-                throw new IllegalArgumentException("지정가 주문에는 limitPrice가 필요합니다.");
-            }
-            status = OrderStatus.PENDING;
-        }
+        BigDecimal orderPrice = (dto.getOrderMethod() == OrderMethod.MARKET)
+                ? priceService.getCurrentPrice(dto.getCoinSymbol())
+                : dto.getPrice();
 
         Order order = Order.builder()
                 .user(user)
-                .market(dto.getMarket())
-                .tradeType(dto.getTradeType())
-                .executionType(dto.getExecutionType())
+                .coinSymbol(dto.getCoinSymbol())
+                .orderType(dto.getOrderType())
+                .orderMethod(dto.getOrderMethod())
+                .orderStatus(OrderStatus.PENDING)
                 .quantity(dto.getQuantity())
-                .priceAtOrderTime(null)  // 아직 체결 안 됐으므로 null
-                .orderedAt(LocalDateTime.now())
-                .status(status)
+                .price(orderPrice)
+                .createdAt(LocalDateTime.now())
                 .build();
 
-        Order savedOrder = orderRepository.save(order);
-
-        return OrderCreateResponseDto.builder()
-                .orderId(savedOrder.getId())
-                .market(savedOrder.getMarket())
-                .tradeType(savedOrder.getTradeType())
-                .executionType(savedOrder.getExecutionType())
-                .quantity(savedOrder.getQuantity())
-                .orderedAt(savedOrder.getOrderedAt())
-                .status(savedOrder.getStatus())
-                .build();
+        Order saved = orderRepository.save(order);
+        return toDto(saved);
     }
 
 
-    @Transactional(readOnly = true)
-    public List<OrderGetResponseDto> getOrdersForUser() {
+    public OrderHistoryResponseDto updateOrder(OrderUpdateRequestDto dto) {
         User user = securityUtils.getCurrentUser();
-        List<Order> orders = orderRepository.findByUserOrderByOrderedAtDesc(user);
 
-        return orders.stream()
-                .map(order -> {
-                    BigDecimal totalAmount = order.getPriceAtOrderTime().multiply(order.getQuantity());
-                    return new OrderGetResponseDto(
-                            order.getId(),
-                            order.getMarket(),
-                            order.getTradeType(),
-                            order.getExecutionType(),
-                            order.getQuantity(),
-                            order.getPriceAtOrderTime(),
-                            order.getOrderedAt(),
-                            order.getStatus(),
-                            totalAmount
-                    );
-                })
-                .toList();
+        Order order = orderRepository.findById(dto.getOrderId())
+                .orElseThrow(() -> new IllegalArgumentException("해당 주문이 존재하지 않습니다."));
+
+        validateOrderUpdatable(order, user);
+
+        order.updateOrder(dto.getPrice(), dto.getQuantity());
+
+        return toDto(order);
     }
+
+
 
     @Transactional
-    public OrderCreateResponseDto updateOrder(Long orderId, OrderCreateRequestDto dto) {
+    public void deleteOrder(Long orderId) {
         User user = securityUtils.getCurrentUser();
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("주문을 찾을 수 없습니다."));
 
-        if (!order.getUser().getId().equals(user.getId())) {
-            throw new UnauthorizedAccessException("본인의 주문만 수정할 수 있습니다.");
-        }
-
-        if (order.getStatus() == OrderStatus.COMPLETED) {
-            throw new IllegalStateException("이미 체결된 주문은 수정할 수 없습니다.");
-        }
-
-        BigDecimal orderPrice;
-        OrderStatus status;
-
-        if (dto.getExecutionType() == ExecutionType.MARKET) {
-            orderPrice = dto.getExecutionPrice();
-            status = OrderStatus.COMPLETED;
-        } else {
-            if (dto.getLimitPrice() == null) {
-                throw new IllegalArgumentException("지정가 주문에는 limitPrice가 필요합니다.");
-            }
-            orderPrice = dto.getLimitPrice();
-
-            boolean isBuy = dto.getTradeType() == TradeType.BUY;
-            boolean isSell = dto.getTradeType() == TradeType.SELL;
-
-            if ((isBuy && dto.getLimitPrice().compareTo(dto.getExecutionPrice()) >= 0) ||
-                    (isSell && dto.getLimitPrice().compareTo(dto.getExecutionPrice()) <= 0)) {
-                status = OrderStatus.COMPLETED;
-            } else {
-                status = OrderStatus.PENDING;
-            }
-        }
-
-        // 체결되면 사용자 자산 조정
-        if (status == OrderStatus.COMPLETED) {
-            BigDecimal totalAmount = orderPrice.multiply(dto.getQuantity());
-
-            if (dto.getTradeType() == TradeType.BUY) {
-                if (user.getBalance().compareTo(totalAmount) < 0) {
-                    throw new IllegalStateException("잔액이 부족합니다.");
-                }
-                user.updateBalance(user.getBalance().subtract(totalAmount));
-            } else {
-                user.updateBalance(user.getBalance().add(totalAmount));
-            }
-
-            userRepository.save(user);
-        }
-
-        // 주문 내용 수정
-        order.update(
-                dto.getMarket(),
-                dto.getTradeType(),
-                dto.getExecutionType(),
-                dto.getQuantity(),
-                orderPrice,
-                LocalDateTime.now(),
-                status
-        );
-
-        Order updatedOrder = orderRepository.save(order);
-
-        return new OrderResponseDto(
-                updatedOrder.getId(),
-                updatedOrder.getMarket(),
-                updatedOrder.getTradeType(),
-                updatedOrder.getExecutionType(),
-                updatedOrder.getQuantity(),
-                updatedOrder.getPriceAtOrderTime(),
-                updatedOrder.getOrderedAt(),
-                updatedOrder.getStatus()
-        );
-    }
-
-    public ProfitResponseDto calculateProfit(Long orderId, BigDecimal currentPrice, User user) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 주문이 존재하지 않습니다."));
 
         if (!order.getUser().getId().equals(user.getId())) {
-            throw new IllegalStateException("자신의 주문만 확인할 수 있습니다.");
+            throw new IllegalArgumentException("본인의 주문만 삭제할 수 있습니다.");
         }
 
-        if (order.getStatus() != OrderStatus.COMPLETED) {
-            throw new IllegalStateException("미체결 주문은 수익률을 계산할 수 없습니다.");
+        if (order.getOrderStatus() != OrderStatus.PENDING) {
+            throw new IllegalArgumentException("체결 완료된 주문은 삭제할 수 없습니다.");
         }
 
-        BigDecimal orderPrice = order.getPriceAtOrderTime();
-        BigDecimal rate;
-        BigDecimal diff;
+        orderRepository.delete(order);
+    }
 
-        if (order.getTradeType() == TradeType.BUY) {
-            diff = currentPrice.subtract(orderPrice);
-            rate = diff.divide(orderPrice, 6, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-        } else {
-            diff = orderPrice.subtract(currentPrice);
-            rate = diff.divide(orderPrice, 6, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-        }
+    @Transactional(readOnly = true)
+    public List<OrderHistoryResponseDto> getMyOrders() {
+        User user = securityUtils.getCurrentUser();
 
-        BigDecimal profit = diff.multiply(order.getQuantity());
+        List<Order> orders = orderRepository.findByUserOrderByCreatedAtDesc(user);
 
-        return ProfitResponseDto.builder()
-                .profitRate(rate)
-                .profitAmount(profit)
-                .build();
+        return orders.stream()
+                .map(this::toDto)
+                .toList();
     }
 
     @Transactional
-    public void cancelOrder(Long orderId, User user) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException("해당 주문이 없습니다."));
+    public List<OrderHistoryResponseDto> resolvePendingOrders() {
+        User user = securityUtils.getCurrentUser();
 
+        List<Order> pendingOrders = orderRepository.findByUserAndOrderStatus(user, OrderStatus.PENDING);
+
+        List<OrderHistoryResponseDto> resolvedOrders = new ArrayList<>();
+
+        for (Order order : pendingOrders) {
+            BigDecimal currentPrice = priceService.getCurrentPrice(order.getCoinSymbol());
+
+            if (isOrderExecutable(order.getOrderMethod(), order.getOrderType(), order.getPrice(), currentPrice)) {
+                executeOrder(user, order.getCoinSymbol(), order.getOrderType(), order.getPrice(), order.getQuantity());
+                order.markAsCompleted();
+                resolvedOrders.add(toDto(order));
+            }
+        }
+
+        return resolvedOrders;
+    }
+
+    private boolean isOrderExecutable(OrderMethod method, OrderType type, BigDecimal limitPrice, BigDecimal currentPrice) {
+        if (method == OrderMethod.MARKET) {
+            return true;
+        }
+
+        if (type == OrderType.BUY) {
+            return currentPrice.compareTo(limitPrice) <= 0; // 현재가가 지정가 이하일 때 매수
+        } else {
+            return currentPrice.compareTo(limitPrice) >= 0; // 현재가가 지정가 이상일 때 매도
+        }
+    }
+
+    private void executeOrder(User user, String coinSymbol, OrderType type, BigDecimal price, BigDecimal quantity) {
+        BigDecimal totalAmount = price.multiply(quantity); // 거래 금액
+
+        if (type == OrderType.BUY) {
+            // 현금 부족 확인
+            if (user.getKrwBalance().compareTo(totalAmount) < 0) {
+                throw new IllegalArgumentException("보유 현금이 부족합니다.");
+            }
+
+            user.updateKrwBalance(totalAmount.negate()); // 현금 차감
+
+            // 자산 업데이트
+            Asset asset = assetRepository.findByUserAndCoinSymbol(user, coinSymbol)
+                    .orElseGet(() -> Asset.builder()
+                            .user(user)
+                            .coinSymbol(coinSymbol)
+                            .quantity(BigDecimal.ZERO)
+                            .avgBuyPrice(BigDecimal.ZERO)
+                            .build());
+
+            BigDecimal prevAmount = asset.getQuantity().multiply(asset.getAvgBuyPrice());
+            BigDecimal newAmount = prevAmount.add(totalAmount);
+            BigDecimal newQuantity = asset.getQuantity().add(quantity);
+
+            asset.updateQuantity(newQuantity);
+            asset.updateAvgBuyPrice(newAmount.divide(newQuantity, 8, RoundingMode.HALF_UP));
+
+            assetRepository.save(asset);
+
+        } else { // SELL
+            Asset asset = assetRepository.findByUserAndCoinSymbol(user, coinSymbol)
+                    .orElseThrow(() -> new IllegalArgumentException("해당 코인을 보유하고 있지 않습니다."));
+
+            if (asset.getQuantity().compareTo(quantity) < 0) {
+                throw new IllegalArgumentException("보유한 코인 수량이 부족합니다.");
+            }
+
+            asset.updateQuantity(asset.getQuantity().subtract(quantity));
+            user.updateKrwBalance(totalAmount); // 현금 증가
+
+            assetRepository.save(asset);
+        }
+    }
+
+    private void validateOrderUpdatable(Order order, User user) {
         if (!order.getUser().getId().equals(user.getId())) {
-            throw new IllegalStateException("자신의 주문만 취소할 수 있습니다.");
+            throw new IllegalArgumentException("본인의 주문만 수정할 수 있습니다.");
         }
 
-        if (order.getStatus() != OrderStatus.PENDING) {
-            throw new IllegalStateException("이미 체결된 주문은 취소할 수 없습니다.");
+        if (order.getOrderStatus() != OrderStatus.PENDING) {
+            throw new IllegalArgumentException("체결이 완료된 주문은 수정할 수 없습니다.");
         }
 
-        // 주문 삭제
-        orderRepository.delete(order);
+        if (order.getOrderMethod() != OrderMethod.LIMIT) {
+            throw new IllegalArgumentException("시장가 주문은 수정할 수 없습니다.");
+        }
+    }
+
+
+    private OrderHistoryResponseDto toDto(Order order) {
+        return OrderHistoryResponseDto.builder()
+                .orderId(order.getId())
+                .coinSymbol(order.getCoinSymbol())
+                .quantity(order.getQuantity())
+                .price(order.getPrice())
+                .orderType(order.getOrderType())
+                .orderMethod(order.getOrderMethod())
+                .orderStatus(order.getOrderStatus())
+                .createdAt(order.getCreatedAt())
+                .build();
     }
 }

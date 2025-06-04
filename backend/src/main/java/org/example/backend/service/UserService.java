@@ -6,6 +6,7 @@ import org.example.backend.entity.enums.Role;
 import org.example.backend.exception.requestError.user.DuplicateEmailException;
 import org.example.backend.exception.requestError.user.DuplicatePhoneNumberException;
 import org.example.backend.exception.requestError.user.UserNotFoundException;
+import org.example.backend.repository.AssetRepository;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.dto.user.request.UserCreateRequestDto;
 import org.example.backend.dto.user.request.UserUpdateRequestDto;
@@ -36,9 +37,9 @@ public class UserService {
                 .password(encodedPassword)
                 .email(dto.getEmail())
                 .phoneNumber(dto.getPhoneNumber())
-                .balance(new BigDecimal("10000000"))
                 .role(Role.USER)
                 .registeredAt(LocalDateTime.now())
+                .krwBalance(new BigDecimal("10000000"))
                 .build();
 
         User savedUser = userRepository.save(user);
@@ -65,11 +66,11 @@ public class UserService {
 
     private UserResponseDto toDto(User user) {
         return UserResponseDto.builder()
+                .id(user.getId())
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .phoneNumber(user.getPhoneNumber())
                 .registeredAt(user.getRegisteredAt())
-                .balance(user.getBalance())
                 .build();
     }
 
