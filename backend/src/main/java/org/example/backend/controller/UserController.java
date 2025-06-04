@@ -24,7 +24,9 @@ public class UserController {
     ) {
         UserResponseDto response = userService.createUser(dto);
         URI location = URI.create("/api/users/" + response.getId());
-        return ResponseEntity.created(location).body(response);
+        return ResponseEntity
+                .created(location)
+                .body(response);
     }
 
     @PutMapping("/{email}")
