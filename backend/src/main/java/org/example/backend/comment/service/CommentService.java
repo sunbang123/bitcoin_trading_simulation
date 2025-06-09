@@ -42,12 +42,7 @@ public class CommentService {
     public List<CommentResponseDto> getAllComments() {
         return commentRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
                 .stream()
-                .map(comment -> CommentResponseDto.builder()
-                        .id(comment.getId())
-                        .username(comment.getUser().getUsername())
-                        .content(comment.getContent())
-                        .createdAt(comment.getCreatedAt())
-                        .build())
+                .map(this::toDto)
                 .toList();
     }
 
@@ -65,5 +60,14 @@ public class CommentService {
 
     private User getCurrentUser() {
         return securityUtils.getCurrentUser();
+    }
+
+    private CommentResponseDto toDto(Comment comment) {
+        return CommentResponseDto.builder()
+                .id(comment.getId())
+                .username(comment.getUser().getUsername())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .build();
     }
 }
