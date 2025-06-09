@@ -4,10 +4,10 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.asset.dto.response.CoinAssetResponseDto;
 import org.example.backend.asset.dto.response.TotalAssetResponseDto;
 import org.example.backend.asset.entity.Asset;
-import org.example.backend.price.service.UpbitPriceService;
+import org.example.backend.order.service.UpbitPriceService;
 import org.example.backend.user.entity.User;
 import org.example.backend.asset.repository.AssetRepository;
-import org.example.backend.global.security.SecurityUtils;
+import org.example.backend.global.security.core.SecurityUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;

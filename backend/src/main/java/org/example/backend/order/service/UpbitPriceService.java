@@ -1,4 +1,4 @@
-package org.example.backend.price.service;
+package org.example.backend.order.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;

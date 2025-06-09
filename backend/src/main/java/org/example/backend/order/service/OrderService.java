@@ -6,7 +6,6 @@ import org.example.backend.order.dto.request.OrderUpdateRequestDto;
 import org.example.backend.order.dto.response.OrderHistoryResponseDto;
 import org.example.backend.asset.entity.Asset;
 import org.example.backend.order.entity.Order;
-import org.example.backend.price.service.UpbitPriceService;
 import org.example.backend.user.entity.User;
 import org.example.backend.global.enums.OrderMethod;
 import org.example.backend.global.enums.OrderStatus;
@@ -15,7 +14,7 @@ import org.example.backend.global.exception.requestError.asset.AssetNotFoundExce
 import org.example.backend.global.exception.requestError.order.*;
 import org.example.backend.asset.repository.AssetRepository;
 import org.example.backend.order.repository.OrderRepository;
-import org.example.backend.global.security.SecurityUtils;
+import org.example.backend.global.security.core.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
