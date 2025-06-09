@@ -34,7 +34,15 @@ public enum ErrorCode {
     ASSET_NOT_FOUND(HttpStatus.NOT_FOUND, "1400", "해당 자산을 보유하고 있지 않습니다."),
     ASSET_LIST_EMPTY(HttpStatus.NOT_FOUND, "1401", "보유한 자산이 없습니다."),
 
+    RANKING_USER_NOT_FOUND(HttpStatus.NOT_FOUND, "1500", "랭킹 정보가 존재하지 않는 사용자입니다."),
+    RANKING_EMPTY(HttpStatus.NOT_FOUND, "1501", "랭킹 데이터가 없습니다."),
+
+    COMMENT_NOT_FOUND(HttpStatus.NOT_FOUND, "1600", "해당 댓글을 찾을 수 없습니다."),
+    COMMENT_MAX_REACHED(HttpStatus.BAD_REQUEST, "1601", "댓글은 최대 5개까지 작성할 수 있습니다."),
+    COMMENT_NOT_OWNER(HttpStatus.FORBIDDEN, "1602", "본인의 댓글만 삭제할 수 있습니다."),
+
     I_DONT_KNOW(HttpStatus.BAD_REQUEST, "2000", "왜 에러임?"),
+
     ;
 
     private final HttpStatus httpStatus;

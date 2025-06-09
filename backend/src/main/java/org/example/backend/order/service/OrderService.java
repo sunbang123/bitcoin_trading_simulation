@@ -1,12 +1,12 @@
 package org.example.backend.order.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.backend.global.util.RealTimePriceService;
 import org.example.backend.order.dto.request.OrderCreateRequestDto;
 import org.example.backend.order.dto.request.OrderUpdateRequestDto;
 import org.example.backend.order.dto.response.OrderHistoryResponseDto;
 import org.example.backend.asset.entity.Asset;
 import org.example.backend.order.entity.Order;
-import org.example.backend.price.service.UpbitPriceService;
 import org.example.backend.user.entity.User;
 import org.example.backend.global.enums.OrderMethod;
 import org.example.backend.global.enums.OrderStatus;
@@ -15,7 +15,7 @@ import org.example.backend.global.exception.requestError.asset.AssetNotFoundExce
 import org.example.backend.global.exception.requestError.order.*;
 import org.example.backend.asset.repository.AssetRepository;
 import org.example.backend.order.repository.OrderRepository;
-import org.example.backend.global.security.SecurityUtils;
+import org.example.backend.global.security.core.SecurityUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,11 +33,12 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final AssetRepository assetRepository;
     private final SecurityUtils securityUtils;
-    private final UpbitPriceService priceService;
+    private final RealTimePriceService realTimePriceService;
 
     public OrderHistoryResponseDto createOrder(OrderCreateRequestDto dto) {
         User user = getCurrentUser();
         BigDecimal price = determineOrderPrice(dto);
+        realTimePriceService.subscribe(dto.getCoinSymbol());
         Order order = buildOrder(dto, user, price);
         return toDto(orderRepository.save(order));
     }
@@ -75,7 +76,7 @@ public class OrderService {
 
         List<OrderHistoryResponseDto> resolved = new ArrayList<>();
         for (Order order : pendingOrders) {
-            BigDecimal currentPrice = priceService.getCurrentPrice(order.getCoinSymbol());
+            BigDecimal currentPrice = realTimePriceService.getCurrentPrice(order.getCoinSymbol());
             if (isOrderExecutable(order.getOrderMethod(), order.getOrderType(), order.getPrice(), currentPrice)) {
                 executeOrder(user, order);
                 order.markAsCompleted();
@@ -101,7 +102,7 @@ public class OrderService {
 
     private BigDecimal determineOrderPrice(OrderCreateRequestDto dto) {
         return dto.getOrderMethod() == OrderMethod.MARKET
-                ? priceService.getCurrentPrice(dto.getCoinSymbol())
+                ? realTimePriceService.getCurrentPrice(dto.getCoinSymbol())
                 : dto.getPrice();
     }
 

@@ -6,7 +6,7 @@ import org.example.backend.comment.dto.response.CommentResponseDto;
 import org.example.backend.comment.entity.Comment;
 import org.example.backend.user.entity.User;
 import org.example.backend.comment.repository.CommentRepository;
-import org.example.backend.global.security.SecurityUtils;
+import org.example.backend.global.security.core.SecurityUtils;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -42,12 +42,7 @@ public class CommentService {
     public List<CommentResponseDto> getAllComments() {
         return commentRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
                 .stream()
-                .map(comment -> CommentResponseDto.builder()
-                        .id(comment.getId())
-                        .username(comment.getUser().getUsername())
-                        .content(comment.getContent())
-                        .createdAt(comment.getCreatedAt())
-                        .build())
+                .map(this::toDto)
                 .toList();
     }
 
@@ -65,5 +60,14 @@ public class CommentService {
 
     private User getCurrentUser() {
         return securityUtils.getCurrentUser();
+    }
+
+    private CommentResponseDto toDto(Comment comment) {
+        return CommentResponseDto.builder()
+                .id(comment.getId())
+                .username(comment.getUser().getUsername())
+                .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
+                .build();
     }
 }
