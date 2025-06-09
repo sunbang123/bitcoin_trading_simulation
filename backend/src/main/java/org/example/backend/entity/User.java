@@ -51,6 +51,10 @@ public class User {
     @Builder.Default
     private List<Asset> assets = new ArrayList<>();
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<Comment> comments = new ArrayList<>();
+
     public void updateUser(String username, String password) {
         this.username = username;
         this.password = password;
