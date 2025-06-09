@@ -25,6 +25,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtTokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final JwtTokenProvider jwtTokenProvider;
 
     @Transactional
     public TokenResponseDto login(LoginRequestDto dto) {
@@ -60,14 +61,14 @@ public class AuthService {
 
     @Transactional
     public void logout(String refreshToken) {
-        String email = SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getName();
-        int revokedCount = refreshTokenRepository.revokeAllByEmail(email);
+        String jti = jwtTokenProvider.getJtiFromToken(refreshToken);
+        RefreshToken token = refreshTokenRepository.findByJtiAndRevokedFalse(jti)
+                .orElseThrow(() -> new AlreadyLogoutException("이미 로그아웃된 사용자입니다."));
 
-        if (revokedCount == 0) {
-            throw new AlreadyLogoutException("이미 로그아웃된 사용자입니다.");
-        }
+        token.revoke();
+        refreshTokenRepository.save(token);
+
+        SecurityContextHolder.clearContext();
     }
 
     private TokenResponseDto generateTokenDto(String email, String role) {
