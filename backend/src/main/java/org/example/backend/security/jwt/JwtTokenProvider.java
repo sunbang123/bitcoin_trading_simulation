@@ -19,6 +19,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Date;
 import java.util.UUID;
 
@@ -39,8 +40,9 @@ public class JwtTokenProvider {
     private final CustomUserDetailsService customUserDetailsService;
 
     private Key getSigningKey() {
-        return Keys.hmacShaKeyFor(secretKey.getBytes());
+        return Keys.hmacShaKeyFor(Base64.getDecoder().decode(secretKey));
     }
+
 
     private Jws<Claims> parseClaims(String token) {
         if (token == null || token.isBlank()) {

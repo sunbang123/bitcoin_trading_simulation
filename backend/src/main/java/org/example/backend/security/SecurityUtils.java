@@ -21,7 +21,7 @@ public class SecurityUtils {
             throw new IllegalStateException("현재 인증된 사용자가 없습니다.");
         }
 
-        String email = ((CustomUserDetails) authentication.getPrincipal()).getEmail();
+        String email = authentication.getName();
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new UserNotFoundException("사용자를 찾을 수 없습니다."));
     }
@@ -32,6 +32,6 @@ public class SecurityUtils {
             throw new IllegalStateException("현재 인증된 사용자가 없습니다.");
         }
 
-        return ((CustomUserDetails) authentication.getPrincipal()).getEmail();
+        return authentication.getName();
     }
 }

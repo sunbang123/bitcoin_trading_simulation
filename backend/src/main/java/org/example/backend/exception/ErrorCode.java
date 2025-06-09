@@ -34,6 +34,7 @@ public enum ErrorCode {
     ASSET_NOT_FOUND(HttpStatus.NOT_FOUND, "1400", "해당 자산을 찾을 수 없습니다."),
     ASSET_LIST_EMPTY(HttpStatus.NOT_FOUND, "1401", "보유한 자산이 없습니다."),
 
+    I_DONT_KNOW(HttpStatus.BAD_REQUEST, "2000", "왜 에러임?"),
     ;
 
     private final HttpStatus httpStatus;

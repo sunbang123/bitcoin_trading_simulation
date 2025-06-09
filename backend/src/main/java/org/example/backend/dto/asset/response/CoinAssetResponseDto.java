@@ -13,7 +13,6 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class CoinAssetResponseDto {
     private String coinSymbol;
-    private String coinName;
     private BigDecimal quantity;
     private BigDecimal evaluatedAmount;
     private BigDecimal profitRate;

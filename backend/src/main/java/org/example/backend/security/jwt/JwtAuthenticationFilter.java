@@ -1,10 +1,17 @@
 package org.example.backend.security.jwt;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.example.backend.exception.ErrorCode;
+import org.example.backend.exception.ErrorResponse;
+import org.example.backend.exception.requestError.auth.ExpiredTokenException;
+import org.example.backend.exception.requestError.auth.InvalidTokenException;
+import org.example.backend.exception.requestError.auth.TokenMissingException;
+import org.example.backend.exception.requestError.auth.TokenTypeMismatchException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -17,6 +24,7 @@ import java.io.IOException;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final ObjectMapper objectMapper;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -27,21 +35,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String uri = request.getRequestURI();
         String method = request.getMethod();
 
-        if (uri.equals("/api/auth/login")
-                || (method.equals("POST") && uri.equals("/api/users"))) {
+        // 인증 제외 경로 처리
+        if (uri.equals("/api/auth/login") ||
+                (method.equals("POST") && uri.equals("/api/users"))) {
             filterChain.doFilter(request, response);
             return;
         }
 
         String bearer = request.getHeader("Authorization");
 
-        if (bearer != null && bearer.startsWith("Bearer ")) {
-            String token = bearer.substring(7);
-            jwtTokenProvider.validateAccessToken(token);
-            Authentication authentication = jwtTokenProvider.getAuthentication(token);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-        }
+        try {
+            if (bearer != null && bearer.startsWith("Bearer ")) {
+                String token = bearer.substring(7);
+                jwtTokenProvider.validateAccessToken(token);
+                Authentication authentication = jwtTokenProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
+            filterChain.doFilter(request, response);
 
-        filterChain.doFilter(request, response);
+        } catch (InvalidTokenException | ExpiredTokenException | TokenTypeMismatchException e) {
+            setErrorResponse(response, ErrorCode.INVALID_TOKEN, e.getMessage());
+        } catch (TokenMissingException e) {
+            setErrorResponse(response, ErrorCode.TOKEN_MISSING, e.getMessage());
+        } catch (Exception e) {
+            setErrorResponse(response, ErrorCode.I_DONT_KNOW, "예상치 못한 인증 오류");
+        }
+    }
+
+    private void setErrorResponse(HttpServletResponse response, ErrorCode errorCode, String message) throws IOException {
+        response.setStatus(errorCode.getHttpStatus().value());
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+
+        ErrorResponse errorResponse = ErrorResponse.of(errorCode, message);
+        response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
     }
 }
