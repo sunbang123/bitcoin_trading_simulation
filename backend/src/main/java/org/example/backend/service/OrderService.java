@@ -10,6 +10,8 @@ import org.example.backend.entity.User;
 import org.example.backend.entity.enums.OrderMethod;
 import org.example.backend.entity.enums.OrderStatus;
 import org.example.backend.entity.enums.OrderType;
+import org.example.backend.exception.requestError.order.OrderNotDeletableException;
+import org.example.backend.exception.requestError.order.OrderNotFoundException;
 import org.example.backend.repository.AssetRepository;
 import org.example.backend.repository.OrderRepository;
 import org.example.backend.security.SecurityUtils;
@@ -58,7 +60,7 @@ public class OrderService {
         User user = securityUtils.getCurrentUser();
 
         Order order = orderRepository.findById(dto.getOrderId())
-                .orElseThrow(() -> new IllegalArgumentException("해당 주문이 존재하지 않습니다."));
+                .orElseThrow(OrderNotFoundException::new);
 
         validateOrderUpdatable(order, user);
 
@@ -74,14 +76,14 @@ public class OrderService {
         User user = securityUtils.getCurrentUser();
 
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 주문이 존재하지 않습니다."));
+                .orElseThrow(OrderNotFoundException::new);
 
         if (!order.getUser().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("본인의 주문만 삭제할 수 있습니다.");
+            throw new OrderNotDeletableException("본인의 주문만 삭제할 수 있습니다.");
         }
 
         if (order.getOrderStatus() != OrderStatus.PENDING) {
-            throw new IllegalArgumentException("체결 완료된 주문은 삭제할 수 없습니다.");
+            throw new OrderNotDeletableException("체결 완료된 주문은 삭제할 수 없습니다.");
         }
 
         orderRepository.delete(order);

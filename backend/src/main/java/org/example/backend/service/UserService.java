@@ -6,7 +6,6 @@ import org.example.backend.entity.enums.Role;
 import org.example.backend.exception.requestError.user.DuplicateEmailException;
 import org.example.backend.exception.requestError.user.DuplicatePhoneNumberException;
 import org.example.backend.exception.requestError.user.UserNotFoundException;
-import org.example.backend.repository.AssetRepository;
 import org.example.backend.repository.UserRepository;
 import org.example.backend.dto.user.request.UserCreateRequestDto;
 import org.example.backend.dto.user.request.UserUpdateRequestDto;

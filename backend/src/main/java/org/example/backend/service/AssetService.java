@@ -24,39 +24,47 @@ public class AssetService {
     public TotalAssetResponseDto getMyAssets() {
         User user = securityUtils.getCurrentUser();
         List<Asset> assets = assetRepository.findByUser(user);
+        BigDecimal krwBalance = user.getKrwBalance();
 
-        // 현재가 조회 및 평가 금액 계산
         List<EvaluatedCoin> evaluatedCoins = assets.stream()
                 .map(asset -> {
                     BigDecimal currentPrice = priceService.getCurrentPrice(asset.getCoinSymbol());
-                    BigDecimal quantity = asset.getQuantity();
-                    BigDecimal avgBuyPrice = asset.getAvgBuyPrice();
-                    BigDecimal evaluatedAmount = currentPrice.multiply(quantity);
-                    BigDecimal profitRate = calculateProfitRate(avgBuyPrice, currentPrice);
+                    BigDecimal evaluatedAmount = currentPrice.multiply(asset.getQuantity());
+                    BigDecimal profitRate = calculateProfitRate(asset.getAvgBuyPrice(), currentPrice);
 
-                    return new EvaluatedCoin(asset.getCoinSymbol(), quantity, evaluatedAmount, profitRate);
+                    return new EvaluatedCoin(asset.getCoinSymbol(), asset.getQuantity(), evaluatedAmount, profitRate);
                 })
                 .toList();
 
-        BigDecimal totalEvaluated = evaluatedCoins.stream()
+        // 총 코인 평가금액 계산
+        BigDecimal totalCoinAsset = evaluatedCoins.stream()
                 .map(EvaluatedCoin::evaluatedAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
+        // 총 자산 = 현금 + 보유 코인 자산
+        BigDecimal totalAsset = krwBalance.add(totalCoinAsset);
+
+        // 코인별 DTO 구성
         List<CoinAssetResponseDto> coinDtos = evaluatedCoins.stream()
                 .map(coin -> CoinAssetResponseDto.builder()
                         .coinSymbol(coin.coinSymbol())
                         .quantity(coin.quantity())
                         .evaluatedAmount(coin.evaluatedAmount())
                         .profitRate(coin.profitRate())
-                        .holdingRatio(calculateHoldingRatio(coin.evaluatedAmount(), totalEvaluated))
+                        .holdingRatio(calculateHoldingRatio(coin.evaluatedAmount(), totalAsset)) // 전체 자산 대비 비중
                         .build())
                 .toList();
 
         return TotalAssetResponseDto.builder()
-                .krwBalance(user.getKrwBalance())
+                .totalAssetAmount(totalAsset)
+                .krwBalance(krwBalance)
+                .krwRatio(calculateHoldingRatio(krwBalance, totalAsset))
+                .coinAssetAmount(totalCoinAsset)
+                .coinRatio(calculateHoldingRatio(totalCoinAsset, totalAsset))
                 .coinAssets(coinDtos)
                 .build();
     }
+
 
     private BigDecimal calculateProfitRate(BigDecimal avgBuyPrice, BigDecimal currentPrice) {
         if (avgBuyPrice.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
@@ -77,6 +85,4 @@ public class AssetService {
             BigDecimal evaluatedAmount,
             BigDecimal profitRate
     ) {}
-
 }
-
