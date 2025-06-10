@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.asset.dto.response.CoinAssetResponseDto;
 import org.example.backend.asset.dto.response.TotalAssetResponseDto;
 import org.example.backend.asset.entity.Asset;
+import org.example.backend.global.util.CalculationUtil;
 import org.example.backend.global.util.RealTimePriceService;
 import org.example.backend.user.entity.User;
 import org.example.backend.asset.repository.AssetRepository;
@@ -15,6 +16,7 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 
 @Service
 @RequiredArgsConstructor
@@ -34,15 +36,18 @@ public class AssetService {
         List<CoinAssetResponseDto> coinDtos = eval.assets().stream()
                 .map(asset -> {
                     BigDecimal evaluatedAmount = eval.evaluatedMap().getOrDefault(asset.getCoinSymbol(), BigDecimal.ZERO);
-                    BigDecimal currentPrice = evaluatedAmount.divide(asset.getQuantity(), 8, RoundingMode.HALF_UP);
-                    BigDecimal profitRate = calculateProfitRate(asset.getAvgBuyPrice(), currentPrice);
+                    BigDecimal currentPrice = asset.getQuantity().compareTo(BigDecimal.ZERO) == 0
+                            ? BigDecimal.ZERO
+                            : evaluatedAmount.divide(asset.getQuantity(), 8, RoundingMode.HALF_UP);
+
+                    BigDecimal profitRate = CalculationUtil.calculateProfitRate(asset.getAvgBuyPrice(), currentPrice);
 
                     return CoinAssetResponseDto.builder()
                             .coinSymbol(asset.getCoinSymbol())
                             .quantity(asset.getQuantity())
                             .evaluatedAmount(evaluatedAmount)
                             .profitRate(profitRate)
-                            .holdingRatio(calculateHoldingRatio(evaluatedAmount, totalAsset))
+                            .holdingRatio(CalculationUtil.calculateHoldingRatio(evaluatedAmount, totalAsset))
                             .build();
                 })
                 .toList();
@@ -50,34 +55,12 @@ public class AssetService {
         return TotalAssetResponseDto.builder()
                 .totalAssetAmount(totalAsset)
                 .krwBalance(krwBalance)
-                .krwRatio(calculateHoldingRatio(krwBalance, totalAsset))
+                .krwRatio(CalculationUtil.calculateHoldingRatio(krwBalance, totalAsset))
                 .coinAssetAmount(eval.totalEvaluated())
-                .coinRatio(calculateHoldingRatio(eval.totalEvaluated(), totalAsset))
+                .coinRatio(CalculationUtil.calculateHoldingRatio(eval.totalEvaluated(), totalAsset))
                 .coinAssets(coinDtos)
                 .build();
     }
-
-
-
-    private BigDecimal calculateProfitRate(BigDecimal avgBuyPrice, BigDecimal currentPrice) {
-        if (avgBuyPrice.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
-        return currentPrice.subtract(avgBuyPrice)
-                .divide(avgBuyPrice, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
-    }
-
-    private BigDecimal calculateHoldingRatio(BigDecimal amount, BigDecimal total) {
-        if (total.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
-        return amount.divide(total, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
-    }
-
-    private record EvaluatedCoin(
-            String coinSymbol,
-            BigDecimal quantity,
-            BigDecimal evaluatedAmount,
-            BigDecimal profitRate
-    ) {}
 
     public UserAssetEvaluation evaluateUserAssets() {
         User user = securityUtils.getCurrentUser();
@@ -88,7 +71,7 @@ public class AssetService {
 
         for (Asset asset : assets) {
             BigDecimal price = realTimePriceService.getCurrentPrice(asset.getCoinSymbol());
-            BigDecimal evaluatedAmount = price.multiply(asset.getQuantity());
+            BigDecimal evaluatedAmount = CalculationUtil.calculateEvaluatedAmount(asset.getQuantity(), price);
             evaluatedMap.put(asset.getCoinSymbol(), evaluatedAmount);
             totalEvaluated = totalEvaluated.add(evaluatedAmount);
         }

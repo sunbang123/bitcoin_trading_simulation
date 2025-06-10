@@ -4,6 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.backend.comment.dto.request.CommentRequestDto;
 import org.example.backend.comment.dto.response.CommentResponseDto;
 import org.example.backend.comment.entity.Comment;
+import org.example.backend.global.exception.requestError.comment.CommentMaxReachedException;
+import org.example.backend.global.exception.requestError.comment.CommentNotOwnerException;
 import org.example.backend.user.entity.User;
 import org.example.backend.comment.repository.CommentRepository;
 import org.example.backend.global.security.core.SecurityUtils;
@@ -20,14 +22,14 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final SecurityUtils securityUtils;
 
-    private static final int MAX_COMMENT_COUNT = 5;
+    private static final int MAX_COMMENT_COUNT = 10;
 
     public void addComment(CommentRequestDto dto) {
         User user = getCurrentUser();
 
         long count = commentRepository.countByUser(user);
         if (count >= MAX_COMMENT_COUNT) {
-            throw new IllegalStateException("댓글은 최대 5개까지 작성할 수 있습니다.");
+            throw new CommentMaxReachedException();
         }
 
         Comment comment = Comment.builder()
@@ -48,14 +50,12 @@ public class CommentService {
 
     public void deleteComment(Long commentId) {
         User user = getCurrentUser();
-        Comment comment = commentRepository.findById(commentId)
-                .orElseThrow(() -> new IllegalArgumentException("댓글이 존재하지 않습니다."));
-
-        if (!comment.getUser().getId().equals(user.getId())) {
-            throw new SecurityException("본인의 댓글만 삭제할 수 있습니다.");
-        }
-
-        commentRepository.delete(comment);
+        commentRepository.findById(commentId).ifPresent(comment -> {
+            if (!comment.getUser().getId().equals(user.getId())) {
+                throw new CommentNotOwnerException();
+            }
+            commentRepository.delete(comment);
+        });
     }
 
     private User getCurrentUser() {
