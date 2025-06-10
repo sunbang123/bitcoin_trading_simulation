@@ -1,15 +1,18 @@
 package org.example.backend.ranking.service;
 
 import lombok.RequiredArgsConstructor;
-import org.example.backend.asset.service.AssetService;
+import org.example.backend.asset.entity.Asset;
+import org.example.backend.asset.repository.AssetRepository;
+import org.example.backend.global.util.CalculationUtil;
+import org.example.backend.global.util.RealTimePriceService;
 import org.example.backend.ranking.dto.response.RankingResponseDto;
 import org.example.backend.user.entity.User;
 import org.example.backend.user.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -19,30 +22,14 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RankingService {
 
     private final UserRepository userRepository;
-    private final AssetService assetService;
+    private final AssetRepository assetRepository;
+    private final RealTimePriceService priceService;
 
     public List<RankingResponseDto> getRanking() {
         List<User> users = userRepository.findAll();
 
         List<RankingResponseDto> unsorted = users.stream()
-                .map(user -> {
-                    AssetService.UserAssetEvaluation eval = assetService.evaluateUserAssets();
-
-                    BigDecimal totalAsset = user.getKrwBalance().add(eval.totalEvaluated());
-                    String topCoin = eval.evaluatedMap().entrySet().stream()
-                            .max(Map.Entry.comparingByValue())
-                            .map(Map.Entry::getKey)
-                            .orElse("-");
-
-                    BigDecimal profitRate = calculateProfitRate(eval);
-
-                    return RankingResponseDto.builder()
-                            .username(user.getUsername())
-                            .totalAssetAmount(totalAsset)
-                            .topCoin(topCoin)
-                            .profitRate(profitRate)
-                            .build();
-                })
+                .map(this::buildRankingInfo)
                 .sorted(Comparator.comparing(RankingResponseDto::getTotalAssetAmount).reversed())
                 .toList();
 
@@ -52,17 +39,37 @@ public class RankingService {
                 .toList();
     }
 
-    private BigDecimal calculateProfitRate(AssetService.UserAssetEvaluation eval) {
-        BigDecimal invested = eval.assets().stream()
+    private RankingResponseDto buildRankingInfo(User user) {
+        List<Asset> assets = assetRepository.findByUser(user);
+
+        BigDecimal totalEvaluated = BigDecimal.ZERO;
+        Map<String, BigDecimal> evaluatedMap = new HashMap<>();
+
+        for (Asset asset : assets) {
+            BigDecimal currentPrice = priceService.getCurrentPrice(asset.getCoinSymbol());
+            BigDecimal evaluatedAmount = CalculationUtil.calculateEvaluatedAmount(asset.getQuantity(), currentPrice);
+            evaluatedMap.put(asset.getCoinSymbol(), evaluatedAmount);
+            totalEvaluated = totalEvaluated.add(evaluatedAmount);
+        }
+
+        BigDecimal totalAsset = user.getKrwBalance().add(totalEvaluated);
+
+        String topCoin = evaluatedMap.entrySet().stream()
+                .max(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse("-");
+
+        BigDecimal investedAmount = assets.stream()
                 .map(a -> a.getAvgBuyPrice().multiply(a.getQuantity()))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        if (invested.compareTo(BigDecimal.ZERO) == 0) {
-            return BigDecimal.ZERO;
-        }
+        BigDecimal profitRate = CalculationUtil.calculateProfitRate(investedAmount, totalEvaluated);
 
-        return eval.totalEvaluated().subtract(invested)
-                .divide(invested, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100));
+        return RankingResponseDto.builder()
+                .username(user.getUsername())
+                .totalAssetAmount(totalAsset)
+                .topCoin(topCoin)
+                .profitRate(profitRate)
+                .build();
     }
 }
