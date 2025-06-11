@@ -42,7 +42,7 @@ public class UserService {
                 .build();
 
         User savedUser = userRepository.save(user);
-        return toDto(savedUser);
+        return toCreateResponseDto(savedUser);
     }
 
     @Transactional
@@ -60,10 +60,10 @@ public class UserService {
 
         user.updateUser(newUsername, newPassword);
 
-        return toDto(user);
+        return toCreateResponseDto(user);
     }
 
-    private UserResponseDto toDto(User user) {
+    private UserResponseDto toCreateResponseDto(User user) {
         return UserResponseDto.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -82,6 +82,7 @@ public class UserService {
         return userRepository.findByPhoneNumber(phoneNum)
                 .orElseThrow(() -> new UserNotFoundException("해당 닉네임을 사용하는 사용자를 찾을 수 없습니다."));
     }
+
     private void checkDuplicateEmail(String email) {
         if (userRepository.existsByEmail(email)) {
             throw new DuplicateEmailException();
