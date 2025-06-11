@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.example.backend.order.dto.request.OrderCreateRequestDto;
 import org.example.backend.order.dto.request.OrderUpdateRequestDto;
+import org.example.backend.order.dto.response.OrderCreateResponseDto;
 import org.example.backend.order.dto.response.OrderHistoryResponseDto;
 import org.example.backend.order.service.OrderService;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +23,13 @@ public class OrderController {
 
     @Operation(summary = "주문 생성", description = "지정가 또는 시장가로 매수/매도 주문을 생성합니다.")
     @PostMapping
-    public ResponseEntity<OrderHistoryResponseDto> createOrder(@RequestBody OrderCreateRequestDto dto) {
+    public ResponseEntity<OrderCreateResponseDto> createOrder(@RequestBody OrderCreateRequestDto dto) {
         return ResponseEntity.ok(orderService.createOrder(dto));
     }
 
     @Operation(summary = "주문 수정", description = "지정가 주문의 가격 및 수량을 수정합니다.")
     @PutMapping
-    public ResponseEntity<OrderHistoryResponseDto> updateOrder(@RequestBody OrderUpdateRequestDto dto) {
+    public ResponseEntity<OrderCreateResponseDto> updateOrder(@RequestBody OrderUpdateRequestDto dto) {
         return ResponseEntity.ok(orderService.updateOrder(dto));
     }
 
