@@ -11,3 +11,5 @@
 - [Project Prototype](https://github.com/kimhaneu1/bitcoin_trading_simulation/wiki/Project-Prototype)
 
 - [ERD 설계](https://www.erdcloud.com/d/4pFNJiMrzmCT5s4KL)
+
+- [이슈 관리 / 테스트 케이스(체크리스트)](https://docs.google.com/spreadsheets/d/1t4fv-HOlzbLHPBPH5mZqZYIXmr2Ft4BsGTwSCGzQDMc/edit?usp=sharing)
