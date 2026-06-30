@@ -65,6 +65,10 @@ class ApiClient {
       throw new Error(`API call failed: ${response.statusText}`);
     }
 
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
     return response.json();
   }
 

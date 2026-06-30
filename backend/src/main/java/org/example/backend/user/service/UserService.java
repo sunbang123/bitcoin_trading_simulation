@@ -6,6 +6,7 @@ import org.example.backend.global.enums.Role;
 import org.example.backend.global.exception.requestError.user.DuplicateEmailException;
 import org.example.backend.global.exception.requestError.user.DuplicatePhoneNumberException;
 import org.example.backend.global.exception.requestError.user.UserNotFoundException;
+import org.example.backend.global.security.core.SecurityUtils;
 import org.example.backend.user.repository.UserRepository;
 import org.example.backend.user.dto.request.UserCreateRequestDto;
 import org.example.backend.user.dto.request.UserUpdateRequestDto;
@@ -23,6 +24,7 @@ import java.time.LocalDateTime;
 public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final SecurityUtils securityUtils;
 
     @Transactional
     public UserResponseDto createUser(UserCreateRequestDto dto) {
@@ -61,6 +63,10 @@ public class UserService {
         user.updateUser(newUsername, newPassword);
 
         return toCreateResponseDto(user);
+    }
+
+    public UserResponseDto getCurrentUser() {
+        return toCreateResponseDto(securityUtils.getCurrentUser());
     }
 
     private UserResponseDto toCreateResponseDto(User user) {

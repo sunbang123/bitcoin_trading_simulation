@@ -1,84 +1,123 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import MyInfo, { UserInfoProps } from '../components/MyInfo';
+import { assetService, TotalAssetResponse } from '@/services/assetService';
+import { orderService, OrderHistoryResponse } from '@/services/orderService';
+import { userService } from '@/services/userService';
+
+interface CurrentUserResponse {
+  id: number;
+  email: string;
+  username: string;
+  phoneNumber: string;
+  registeredAt: string;
+}
+
+const coinNames: Record<string, string> = {
+  BTC: '비트코인',
+  ETH: '이더리움',
+  XRP: '리플',
+};
+
+const emptyUserData: UserInfoProps = {
+  name: '',
+  email: '',
+  phone: '',
+  joinDate: '',
+  totalBalance: 0,
+  goalAmount: 0,
+  currentAmount: 0,
+  goalPercentage: 0,
+  assets: [],
+  transactions: [],
+};
+
+const formatDateTime = (value?: string) => {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleString('ko-KR', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+};
+
+const toNumber = (value: unknown) => Number(value ?? 0);
+
+const buildUserData = (
+  user: CurrentUserResponse,
+  asset: TotalAssetResponse,
+  orders: OrderHistoryResponse[]
+): UserInfoProps => ({
+  name: user.username,
+  email: user.email,
+  phone: user.phoneNumber,
+  joinDate: formatDateTime(user.registeredAt),
+  totalBalance: toNumber(asset.totalAssetAmount),
+  goalAmount: toNumber(asset.krwBalance),
+  currentAmount: toNumber(asset.coinAssetAmount),
+  goalPercentage: Math.min(100, Math.max(0, toNumber(asset.krwRatio))),
+  assets: asset.coinAssets.map((coin) => ({
+    name: coinNames[coin.coinSymbol] ?? coin.coinSymbol,
+    symbol: coin.coinSymbol,
+    amount: toNumber(coin.quantity),
+    value: toNumber(coin.evaluatedAmount),
+    change: toNumber(coin.profitRate),
+    percentage: toNumber(coin.holdingRatio),
+  })),
+  transactions: orders.map((order) => ({
+    date: formatDateTime(order.createdAt),
+    currency: order.coinSymbol,
+    type: order.orderType === 'BUY' ? 'buy' : 'sell',
+    price: toNumber(order.price),
+    amount: toNumber(order.quantity),
+    total: toNumber(order.totalAmount),
+    status: order.orderStatus === 'COMPLETED' ? '완료' : '대기',
+  })),
+});
 
 const MyInfoPage: React.FC = () => {
-  // 샘플 데이터
-  const userData: UserInfoProps = {
-    name: "홍길동",
-    email: "hong@example.com",
-    phone: "010-1234-5678",
-    joinDate: "2023년 10월 15일",
-    totalBalance: 12450000,
-    goalAmount: 5000000,
-    currentAmount: 7450000,
-    goalPercentage: 40,
-    assets: [
-      {
-        name: "비트코인",
-        symbol: "BTC",
-        amount: 0.12,
-        value: 4800000,
-        change: 2.3,
-        percentage: 64.4
-      },
-      {
-        name: "이더리움",
-        symbol: "ETH",
-        amount: 0.85,
-        value: 1950000,
-        change: -1.5,
-        percentage: 26.2
-      },
-      {
-        name: "리플",
-        symbol: "XRP",
-        amount: 1200,
-        value: 700000,
-        change: 5.7,
-        percentage: 9.4
-      }
-    ],
-    transactions: [
-      {
-        date: "2025-04-20 14:32:15",
-        currency: "BTC",
-        type: "buy",
-        price: 40000000,
-        amount: 0.02,
-        total: 800000,
-        status: "완료"
-      },
-      {
-        date: "2025-04-18 09:15:22",
-        currency: "ETH",
-        type: "buy",
-        price: 2300000,
-        amount: 0.5,
-        total: 1150000,
-        status: "완료"
-      },
-      {
-        date: "2025-04-15 17:48:33",
-        currency: "XRP",
-        type: "sell",
-        price: 600,
-        amount: 500,
-        total: 300000,
-        status: "완료"
-      },
-      {
-        date: "2025-04-10 11:20:45",
-        currency: "BTC",
-        type: "buy",
-        price: 39500000,
-        amount: 0.1,
-        total: 3950000,
-        status: "완료"
-      }
-    ]
-  };
+  const [userData, setUserData] = useState<UserInfoProps>(emptyUserData);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  return <MyInfo {...userData} />;
+  useEffect(() => {
+    const fetchMyInfo = async () => {
+      try {
+        setIsLoading(true);
+        setErrorMessage('');
+
+        const [user, asset, orders] = await Promise.all([
+          userService.getCurrentUser(),
+          assetService.getMyAssets(),
+          orderService.getMyOrders(),
+        ]);
+
+        setUserData(buildUserData(user, asset, orders));
+      } catch (error) {
+        console.error(error);
+        setErrorMessage('내 정보를 불러오지 못했습니다. 로그인 상태와 백엔드 서버 실행 여부를 확인해 주세요.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMyInfo();
+  }, []);
+
+  const props = useMemo(
+    () => ({
+      ...userData,
+      isLoading,
+      errorMessage,
+    }),
+    [errorMessage, isLoading, userData]
+  );
+
+  return <MyInfo {...props} />;
 };
 
 export default MyInfoPage;

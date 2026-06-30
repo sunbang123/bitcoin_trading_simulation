@@ -37,6 +37,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 인증 제외 경로 처리
         if (uri.equals("/api/auth/login") ||
+                uri.equals("/api/auth/refresh") ||
                 (method.equals("POST") && uri.equals("/api/users")) ||
                 uri.startsWith("/swagger-ui") ||
                 uri.startsWith("/v3/api-docs")) {
