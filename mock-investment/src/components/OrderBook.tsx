@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { useUpbitSocket } from '../hooks/useUpbitSocket';
+import { UpbitSocketMessage, useUpbitSocket } from '../hooks/useUpbitSocket';
 import { usePreserveWindowScroll } from '../hooks/usePreserveWindowScroll';
 
 const OrderBook: React.FC = () => {
@@ -18,8 +18,17 @@ const OrderBook: React.FC = () => {
     tradePrice: 0
   });
 
-  const handleTrade = useCallback((data: any) => {
-    if (data.type !== 'trade') return;
+  const handleTrade = useCallback((data: UpbitSocketMessage) => {
+    if (
+      data.type !== 'trade' ||
+      data.best_ask_price === undefined ||
+      data.best_ask_size === undefined ||
+      data.best_bid_price === undefined ||
+      data.best_bid_size === undefined ||
+      data.trade_price === undefined
+    ) {
+      return;
+    }
 
     const prevData = prevDataRef.current;
     let needsUpdate = false;

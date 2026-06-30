@@ -1,7 +1,7 @@
 // src/components/TradeHistory.tsx
 
 import React, { useState, useCallback } from 'react';
-import { useUpbitSocket } from '../hooks/useUpbitSocket';
+import { UpbitSocketMessage, useUpbitSocket } from '../hooks/useUpbitSocket';
 import { usePreserveWindowScroll } from '../hooks/usePreserveWindowScroll';
 
 interface TradeItem {
@@ -45,8 +45,15 @@ export default function TradeHistory() {
 
   usePreserveWindowScroll([trades]);
 
-  const handleTrade = useCallback((data: any) => {
-    if (data.type !== 'trade') return;
+  const handleTrade = useCallback((data: UpbitSocketMessage) => {
+    if (
+      data.type !== 'trade' ||
+      !data.trade_time ||
+      data.trade_price === undefined ||
+      data.trade_volume === undefined
+    ) {
+      return;
+    }
 
     // 원본 UTC 시간
     let originalTime = data.trade_time;

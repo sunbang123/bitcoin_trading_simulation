@@ -2,7 +2,15 @@ import React, { useEffect, useState, useCallback } from 'react';
 import CandleChart from './CandleChart';
 import axios from 'axios';
 import { CandlestickData, UTCTimestamp } from 'lightweight-charts';
-import { useUpbitSocket } from '../hooks/useUpbitSocket';
+import { UpbitSocketMessage, useUpbitSocket } from '../hooks/useUpbitSocket';
+
+interface UpbitCandle {
+  candle_date_time_utc: string;
+  opening_price: number;
+  high_price: number;
+  low_price: number;
+  trade_price: number;
+}
 
 // 1분봉 생성 유틸 함수
 const createNewCandle = (timestamp: number, price: number): CandlestickData => {
@@ -26,7 +34,7 @@ const ChartArea: React.FC = () => {
         params: { market: 'KRW-BTC', count: 100 },
       });
 
-      const formatted: CandlestickData[] = res.data.map((item: any) => ({
+      const formatted: CandlestickData[] = (res.data as UpbitCandle[]).map((item) => ({
         time: Math.floor(new Date(item.candle_date_time_utc).getTime() / 1000) as UTCTimestamp,
         open: item.opening_price,
         high: item.high_price,
@@ -41,14 +49,16 @@ const ChartArea: React.FC = () => {
   }, []);
 
   // 실시간 체결 데이터 처리
-  const handleTrade = useCallback((data: any) => {
+  const handleTrade = useCallback((data: UpbitSocketMessage) => {
     if (!data?.trade_price || !data?.timestamp) return;
 
-    const newCandleTime = Math.floor(data.timestamp / 1000 / 60) * 60 as UTCTimestamp;
+    const timestamp = data.timestamp;
+    const tradePrice = data.trade_price;
+    const newCandleTime = Math.floor(timestamp / 1000 / 60) * 60 as UTCTimestamp;
 
     setCandleData((prev) => {
       if (prev.length === 0) {
-        return [createNewCandle(data.timestamp, data.trade_price)];
+        return [createNewCandle(timestamp, tradePrice)];
       }
 
       const last = prev[prev.length - 1];
@@ -57,14 +67,14 @@ const ChartArea: React.FC = () => {
         // 기존 봉 업데이트
         const updated: CandlestickData = {
           ...last,
-          close: data.trade_price,
-          high: Math.max(last.high, data.trade_price),
-          low: Math.min(last.low, data.trade_price),
+          close: tradePrice,
+          high: Math.max(last.high, tradePrice),
+          low: Math.min(last.low, tradePrice),
         };
         return [...prev.slice(0, -1), updated];
       } else {
         // 새 봉 추가
-        return [...prev, createNewCandle(data.timestamp, data.trade_price)];
+        return [...prev, createNewCandle(timestamp, tradePrice)];
       }
     });
   }, []);

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { useUpbitSocket } from '../hooks/useUpbitSocket';
+import { UpbitSocketMessage, useUpbitSocket } from '../hooks/useUpbitSocket';
 import { usePreserveWindowScroll } from '../hooks/usePreserveWindowScroll';
 
 interface DepthItem {
@@ -17,8 +17,16 @@ const MiniDepthChart: React.FC = () => {
   const prevAskRef = useRef<{price: number, volume: number} | null>(null);
   const prevBidRef = useRef<{price: number, volume: number} | null>(null);
 
-  const handleTrade = useCallback((data: any) => {
-    if (data.type !== 'trade') return;
+  const handleTrade = useCallback((data: UpbitSocketMessage) => {
+    if (
+      data.type !== 'trade' ||
+      data.best_ask_price === undefined ||
+      data.best_ask_size === undefined ||
+      data.best_bid_price === undefined ||
+      data.best_bid_size === undefined
+    ) {
+      return;
+    }
 
     const newAsk = { price: data.best_ask_price, volume: data.best_ask_size };
     const newBid = { price: data.best_bid_price, volume: data.best_bid_size };
