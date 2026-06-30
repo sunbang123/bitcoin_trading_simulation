@@ -29,6 +29,12 @@ public class UserController {
         return ResponseEntity.created(location).body(response);
     }
 
+    @Operation(summary = "내 회원 정보 조회", description = "현재 로그인한 사용자의 회원 정보를 조회합니다.")
+    @GetMapping("/me")
+    public ResponseEntity<UserResponseDto> getCurrentUser() {
+        return ResponseEntity.ok(userService.getCurrentUser());
+    }
+
     @Operation(summary = "회원 정보 수정", description = "이메일을 기준으로 사용자의 정보를 수정합니다.")
     @PutMapping("/{email}")
     public ResponseEntity<UserResponseDto> updateUser(

@@ -31,6 +31,8 @@ export interface UserInfoProps {
   goalPercentage: number;
   assets: CryptoAsset[];
   transactions: Transaction[];
+  isLoading?: boolean;
+  errorMessage?: string;
 }
 
 const MyInfo: React.FC<UserInfoProps> = ({
@@ -43,7 +45,9 @@ const MyInfo: React.FC<UserInfoProps> = ({
   currentAmount,
   goalPercentage,
   assets,
-  transactions
+  transactions,
+  isLoading = false,
+  errorMessage
 }) => {
   return (
     <div className="bg-white min-h-screen">
@@ -52,6 +56,21 @@ const MyInfo: React.FC<UserInfoProps> = ({
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-4 pt-6">
         <h2 className="text-xl text-blue-400 font-semibold mb-6">내 정보</h2>
+
+        {isLoading && (
+          <div className="border rounded-md p-6 text-center text-gray-500">
+            내 정보를 불러오는 중입니다.
+          </div>
+        )}
+
+        {!isLoading && errorMessage && (
+          <div className="border border-red-200 bg-red-50 rounded-md p-4 text-red-600">
+            {errorMessage}
+          </div>
+        )}
+
+        {!isLoading && !errorMessage && (
+          <>
 
         {/* Personal Info */}
         <div className="mb-8">
@@ -91,7 +110,7 @@ const MyInfo: React.FC<UserInfoProps> = ({
           <div className="grid grid-cols-2 gap-6">
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-sm">목표 금액</span>
+                <span className="text-sm">보유 원화</span>
                 <span className="text-sm">₩{goalAmount.toLocaleString()}</span>
               </div>
               <div className="bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -106,7 +125,7 @@ const MyInfo: React.FC<UserInfoProps> = ({
             </div>
             <div>
               <div className="flex justify-between mb-2">
-                <span className="text-sm">목표 금액</span>
+                <span className="text-sm">코인 평가금액</span>
                 <span className="text-sm">₩{currentAmount.toLocaleString()}</span>
               </div>
               <div className="bg-gray-200 h-2 rounded-full overflow-hidden">
@@ -137,7 +156,13 @@ const MyInfo: React.FC<UserInfoProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {assets.map((asset, index) => (
+                {assets.length === 0 ? (
+                  <tr>
+                    <td className="py-6 px-4 text-center text-gray-500" colSpan={5}>
+                      보유 중인 코인이 없습니다.
+                    </td>
+                  </tr>
+                ) : assets.map((asset, index) => (
                   <tr key={index} className="border-t">
                     <td className="py-4 px-4">
                       <div className="flex items-center">
@@ -196,7 +221,13 @@ const MyInfo: React.FC<UserInfoProps> = ({
                 </tr>
               </thead>
               <tbody>
-                {transactions.map((tx, index) => (
+                {transactions.length === 0 ? (
+                  <tr>
+                    <td className="py-6 px-4 text-center text-gray-500" colSpan={7}>
+                      주문 내역이 없습니다.
+                    </td>
+                  </tr>
+                ) : transactions.map((tx, index) => (
                   <tr key={index} className="border-t">
                     <td className="py-3 px-4 text-sm">{tx.date}</td>
                     <td className="py-3 px-4">{tx.currency}</td>
@@ -219,6 +250,8 @@ const MyInfo: React.FC<UserInfoProps> = ({
             </table>
           </div>
         </div>
+          </>
+        )}
       </div>
     </div>
   );

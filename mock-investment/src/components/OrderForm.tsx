@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
+import { orderService } from '@/services/orderService';
 
 const OrderForm: React.FC = () => {
   const [isBuy, setIsBuy] = useState(true);
   const [price, setPrice] = useState('');  // 문자열 상태로 유지
   const [amount, setAmount] = useState(''); // 문자열 상태로 유지
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState('');
 
   // 주문 총액 계산
   const total = (() => {
@@ -19,8 +22,7 @@ const OrderForm: React.FC = () => {
     setPrice(updated.toString());
   };
 
-  // 주문 전 콘솔 출력
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const p = parseFloat(price);
     const a = parseFloat(amount);
     if (isNaN(p) || isNaN(a) || p <= 0 || a <= 0) {
@@ -28,11 +30,27 @@ const OrderForm: React.FC = () => {
       return;
     }
 
-    const orderType = isBuy ? '매수' : '매도';
-    console.log(`[${orderType} 주문]`);
-    console.log(`가격: ${p}₩`);
-    console.log(`수량: ${a}`);
-    console.log(`총액: ${total.toLocaleString()}₩`);
+    try {
+      setIsSubmitting(true);
+      setMessage('');
+
+      const response = await orderService.createOrder({
+        coinSymbol: 'BTC',
+        quantity: a,
+        price: p,
+        orderType: isBuy ? 'BUY' : 'SELL',
+        orderMethod: 'LIMIT',
+      });
+
+      setMessage(`${response.coinSymbol} ${isBuy ? '매수' : '매도'} 주문이 접수되었습니다. 주문번호: ${response.orderId}`);
+      setPrice('');
+      setAmount('');
+    } catch (error) {
+      console.error(error);
+      setMessage('주문 접수에 실패했습니다. 로그인 상태와 잔고를 확인해 주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -89,12 +107,18 @@ const OrderForm: React.FC = () => {
       {/* 주문 버튼 */}
       <button
         onClick={handleSubmit}
+        disabled={isSubmitting}
         className={`w-full py-2 rounded font-semibold ${
           isBuy ? 'bg-blue-600 text-white' : 'bg-red-600 text-white'
+        } ${isSubmitting ? 'opacity-60 cursor-not-allowed' : ''
         }`}
       >
-        {isBuy ? '매수 주문' : '매도 주문'}
+        {isSubmitting ? '주문 접수 중...' : isBuy ? '매수 주문' : '매도 주문'}
       </button>
+
+      {message && (
+        <p className="mt-3 text-xs text-gray-600 leading-relaxed">{message}</p>
+      )}
     </div>
   );
 };

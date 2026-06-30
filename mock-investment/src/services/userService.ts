@@ -20,6 +20,10 @@ class UserService {
     return apiClient.post<SignupResponse>('/api/users', data);
   }
 
+  async getCurrentUser(): Promise<SignupResponse> {
+    return apiClient.get<SignupResponse>('/api/users/me');
+  }
+
   async getUserByEmail(email: string): Promise<SignupResponse> {
     return apiClient.get<SignupResponse>(`/api/users/email/${email}`);
   }
