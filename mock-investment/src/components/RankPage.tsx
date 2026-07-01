@@ -1,86 +1,106 @@
-// src/components/RankPage.tsx
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { rankData } from '../mock/rankData';
 import Header from './Header';
+import { RankingResponse, rankingService } from '@/services/rankingService';
+
+const formatKrw = (value: number) =>
+  new Intl.NumberFormat('ko-KR', {
+    style: 'currency',
+    currency: 'KRW',
+    maximumFractionDigits: 0
+  }).format(value);
+
+const formatProfitRate = (value: number) => `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
 
 const RankPage: React.FC = () => {
+  const [rankings, setRankings] = useState<RankingResponse[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
+
+  useEffect(() => {
+    const loadRankings = async () => {
+      try {
+        setIsLoading(true);
+        setErrorMessage('');
+        const data = await rankingService.getRankings();
+        setRankings(data);
+      } catch (error) {
+        console.error(error);
+        setErrorMessage('랭킹 데이터를 불러오지 못했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void loadRankings();
+  }, []);
+
   return (
-    <div className="bg-white min-h-screen">
+    <div className="min-h-screen bg-white">
       <Header />
-    <div className="bg-white min-h-screen">
-      <div className="relative w-full h-56">
-        <Image src="/images/rank_banner.png" alt="Rank Banner" layout="fill" objectFit="cover" />
+
+      <div className="relative h-56 w-full">
+        <Image src="/images/rank_banner.png" alt="Rank Banner" fill className="object-cover" priority />
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-10">
-        <h2 className="text-3xl font-bold text-center mb-6 text-purple-700">
-          제 1회 비트코인 모의투자 대회
+      <main className="mx-auto max-w-5xl px-4 py-10">
+        <h2 className="mb-6 text-center text-3xl font-bold text-purple-700">
+          비트코인 모의투자 랭킹
         </h2>
 
         <div className="overflow-x-auto rounded-lg shadow">
-          <table className="w-full text-center border-collapse">
+          <table className="w-full border-collapse text-center">
             <thead>
               <tr className="bg-gradient-to-r from-indigo-200 to-purple-200">
-                <th className="py-3 px-4">순위</th>
-                <th className="py-3 px-4">이름</th>
-                <th className="py-3 px-4">보유자산</th>
-                <th className="py-3 px-4">보유 코인</th>
-                <th className="py-3 px-4">수익률</th>
+                <th className="px-4 py-3">순위</th>
+                <th className="px-4 py-3">이름</th>
+                <th className="px-4 py-3">보유자산</th>
+                <th className="px-4 py-3">대표 코인</th>
+                <th className="px-4 py-3">수익률</th>
               </tr>
             </thead>
             <tbody>
-              {rankData.map((user, index) => (
-                <tr key={index} className="border-b hover:bg-gray-50">
-                  <td className="py-2 px-4 font-semibold">
-                    {index === 0 ? '👑' : index + 1}
+              {isLoading && (
+                <tr>
+                  <td className="px-4 py-8 text-gray-500" colSpan={5}>
+                    랭킹 데이터를 불러오는 중입니다.
                   </td>
-                  <td className="py-2 px-4">{user.name}</td>
-                  <td className="py-2 px-4">{user.asset}</td>
-                  <td className="py-2 px-4">{user.coin}</td>
-                  <td className="py-2 px-4 text-green-600">{user.return}</td>
                 </tr>
-              ))}
+              )}
+
+              {!isLoading && errorMessage && (
+                <tr>
+                  <td className="px-4 py-8 text-red-500" colSpan={5}>
+                    {errorMessage}
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading && !errorMessage && rankings.length === 0 && (
+                <tr>
+                  <td className="px-4 py-8 text-gray-500" colSpan={5}>
+                    아직 랭킹 데이터가 없습니다.
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading &&
+                !errorMessage &&
+                rankings.map((user) => (
+                  <tr key={`${user.rank}-${user.username}`} className="border-b hover:bg-gray-50">
+                    <td className="px-4 py-2 font-semibold">{user.rank === 1 ? '1위' : user.rank}</td>
+                    <td className="px-4 py-2">{user.username}</td>
+                    <td className="px-4 py-2">{formatKrw(user.totalAssetAmount)}</td>
+                    <td className="px-4 py-2">{user.topCoin}</td>
+                    <td className={user.profitRate >= 0 ? 'px-4 py-2 text-green-600' : 'px-4 py-2 text-red-500'}>
+                      {formatProfitRate(user.profitRate)}
+                    </td>
+                  </tr>
+                ))}
             </tbody>
           </table>
         </div>
-
-        <div className="mt-12">
-          <h3 className="text-xl font-bold mb-4">댓글 (15163)</h3>
-          <div className="text-sm text-gray-600 mb-2">
-            댓글 작성 시 IP가 기록되며 사이트 이용 제한이나 요청에 따라 법적 조치가 취해질 수 있습니다.
-          </div>
-          <form className="flex items-center space-x-4 mb-6">
-            <input
-              type="text"
-              placeholder="닉네임"
-              className="border px-3 py-2 rounded w-1/4"
-            />
-            <input
-              type="password"
-              placeholder="비밀번호"
-              className="border px-3 py-2 rounded w-1/4"
-            />
-            <button className="bg-purple-500 text-white px-4 py-2 rounded">확인하기</button>
-          </form>
-
-          <div className="space-y-3">
-            <div className="p-3 bg-gray-100 rounded">
-              <p className="text-sm font-semibold">덱스</p>
-              <p>하이</p>
-            </div>
-            <div className="p-3 bg-gray-100 rounded">
-              <p className="text-sm font-semibold">홍진호</p>
-              <p>이거 어떻게 하는거임?</p>
-            </div>
-            <div className="p-3 bg-gray-100 rounded">
-              <p className="text-sm font-semibold">유리사</p>
-              <p>내가 알려줄게 ㅋㅋㅋㅋ</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </main>
     </div>
   );
 };
