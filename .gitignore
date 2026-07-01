@@ -86,3 +86,6 @@ backend/*.swp
 
 # Spring Boot 설정 파일
 backend/src/main/resources/application.yml
+
+# pnpm
+.pnpm-store/
