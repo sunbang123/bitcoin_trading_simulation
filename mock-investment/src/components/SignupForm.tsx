@@ -65,9 +65,10 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSignupSuccess }) => {
         router.push('/login');
       }
     } catch (error) {
-      console.error('Signup error:', error);
       setErrors({
-        form: '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.',
+        form: error instanceof Error
+          ? error.message
+          : '회원가입 중 오류가 발생했습니다. 다시 시도해주세요.',
       });
     }
   };
@@ -104,6 +105,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSignupSuccess }) => {
                 placeholder="이메일을 입력해주세요"
                 value={formData.email}
                 onChange={handleChange}
+                maxLength={25}
               />
               {errors.email && (
                 <p className="text-red-500 text-xs mt-1">{errors.email}</p>
@@ -122,6 +124,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSignupSuccess }) => {
                 placeholder="비밀번호를 입력해주세요"
                 value={formData.password}
                 onChange={handleChange}
+                minLength={8}
+                maxLength={20}
               />
               {errors.password && (
                 <p className="text-red-500 text-xs mt-1">{errors.password}</p>
@@ -161,6 +165,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ onSignupSuccess }) => {
                 placeholder="이름을 입력해주세요"
                 value={formData.username}
                 onChange={handleChange}
+                maxLength={10}
               />
               {errors.username && (
                 <p className="text-red-500 text-xs mt-1">{errors.username}</p>

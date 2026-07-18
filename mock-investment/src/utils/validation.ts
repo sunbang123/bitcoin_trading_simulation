@@ -2,7 +2,11 @@
 
 export const validationRules = {
   isValidEmail: (email: string) => /\S+@\S+\.\S+/.test(email),
-  isValidPassword: (password: string) => password.length >= 8,
+  isValidPassword: (password: string) =>
+    password.length >= 8 &&
+    password.length <= 20 &&
+    /\d/.test(password) &&
+    /[!@#$%^&*()_+\-={}:";'<>?,./]/.test(password),
 };
 
 interface SignupFormData {
@@ -21,12 +25,14 @@ export const validateSignupForm = (formData: SignupFormData) => {
     errors.email = '이메일을 입력해주세요.';
   } else if (!validationRules.isValidEmail(formData.email)) {
     errors.email = '유효한 이메일 형식이 아닙니다.';
+  } else if (formData.email.length > 25) {
+    errors.email = '이메일은 25자 이하여야 합니다.';
   }
 
   if (!formData.password) {
     errors.password = '비밀번호를 입력해주세요.';
   } else if (!validationRules.isValidPassword(formData.password)) {
-    errors.password = '비밀번호는 8자 이상이어야 합니다.';
+    errors.password = '비밀번호는 8~20자이며 숫자와 특수문자를 포함해야 합니다.';
   }
 
   if (formData.password !== formData.passwordConfirm) {
@@ -35,6 +41,8 @@ export const validateSignupForm = (formData: SignupFormData) => {
 
   if (!formData.username) {
     errors.username = '이름을 입력해주세요.';
+  } else if (formData.username.length > 10) {
+    errors.username = '이름은 10자 이하여야 합니다.';
   }
 
   if (!formData.phoneNumber) {

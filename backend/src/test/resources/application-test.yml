@@ -14,3 +14,8 @@ jwt:
   secret: ctO7aoCbIxNAAA3hDdiI9GoiUhFnARiawBr6avj8WYA=
   access-expiration-ms: 3600000
   refresh-expiration-ms: 1209600000
+
+upbit:
+  websocket:
+    enabled: false
+    price-wait-timeout-ms: 100

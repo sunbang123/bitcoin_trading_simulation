@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import Header from './Header';
+import { authService } from '@/services/authService';
 
 const LoginForm: React.FC = () => {
   const router = useRouter();
@@ -9,6 +10,7 @@ const LoginForm: React.FC = () => {
   const [password, setPassword] = useState('');
   const [keepLoggedIn, setKeepLoggedIn] = useState(false);
   const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,11 +19,16 @@ const LoginForm: React.FC = () => {
       return;
     }
 
+    setError('');
+    setIsSubmitting(true);
+
     try {
-      console.log('Logging in:', { email, password, keepLoggedIn });
-      router.push('/myinfo');
+      await authService.login(email, password);
+      await router.push('/myinfo');
     } catch (err) {
-      setError('로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+      setError(err instanceof Error ? err.message : '로그인 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -84,9 +91,10 @@ const LoginForm: React.FC = () => {
 
             <button
               type="submit"
-              className="w-full bg-sky-300 hover:bg-sky-400 text-white font-bold py-2 px-4 rounded-lg"
+              disabled={isSubmitting}
+              className="w-full bg-sky-300 hover:bg-sky-400 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-2 px-4 rounded-lg"
             >
-              로그인
+              {isSubmitting ? '로그인 중...' : '로그인'}
             </button>
           </form>
 

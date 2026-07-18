@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
+@Table(name = "assets")
 public class Asset {
 
     @Id
@@ -21,13 +22,13 @@ public class Asset {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
+    @Column(name = "coin_symbol", nullable = false, length = 20)
     private String coinSymbol; // BTC, ETH, KRW 등
 
     @Column(nullable = false, precision = 19, scale = 8)
     private BigDecimal quantity;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(name = "avg_buy_price", nullable = false, precision = 19, scale = 2)
     private BigDecimal avgBuyPrice;
 
     public void updateQuantity(BigDecimal newQuantity) {

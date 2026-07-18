@@ -55,6 +55,10 @@ public class OrderExecutionUtil {
     }
 
     public boolean isExecutable(OrderMethod method, OrderType type, BigDecimal limitPrice, BigDecimal currentPrice) {
+        if (currentPrice == null || currentPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            return false;
+        }
+
         return switch (method) {
             case MARKET -> true;
             case LIMIT -> (type == OrderType.BUY)
@@ -65,7 +69,7 @@ public class OrderExecutionUtil {
 
     public BigDecimal determineOrderPrice(OrderCreateRequestDto dto) {
         return dto.getOrderMethod() == OrderMethod.MARKET
-                ? realTimePriceService.getCurrentPrice(dto.getCoinSymbol())
+                ? realTimePriceService.getCurrentPriceRequired(dto.getCoinSymbol())
                 : dto.getPrice();
     }
 

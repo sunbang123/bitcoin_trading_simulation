@@ -2,7 +2,6 @@ import React from 'react';
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import SignupForm from '../components/SignupForm';
-import ServerDebugPanel from './serverDebugPanel';
 import SecurityAlertBanner from '../components/SecurityAlertBanner';
 
 const Signup: NextPage = () => {
@@ -21,7 +20,6 @@ const Signup: NextPage = () => {
 
       {/* Signup Form */}
       <SignupForm />
-      <ServerDebugPanel/>
     </div>
   );
 };

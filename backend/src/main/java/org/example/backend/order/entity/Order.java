@@ -26,7 +26,7 @@ public class Order {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
+    @Column(name = "coin_symbol", nullable = false, length = 20)
     private String coinSymbol;
 
     @Column(nullable = false, precision = 19, scale = 8)
@@ -36,18 +36,18 @@ public class Order {
     private BigDecimal price; // 주문 당시 지정한 가격 (시장가일 경우 생략 가능)
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "order_type", nullable = false, length = 20)
     private OrderType orderType;// BUY, SELL
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "order_method", nullable = false, length = 20)
     private OrderMethod orderMethod; // MARKET, LIMIT
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "order_status", nullable = false, length = 20)
     private OrderStatus orderStatus; // PENDING, COMPLETED, CANCELED
 
-    @Column(nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     public void updateOrder(BigDecimal newPrice, BigDecimal newQuantity) {

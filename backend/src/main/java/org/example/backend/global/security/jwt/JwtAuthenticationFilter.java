@@ -15,13 +15,17 @@ import org.example.backend.global.exception.requestError.auth.TokenTypeMismatchE
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private static final AntPathMatcher PATH_MATCHER = new AntPathMatcher();
 
     private final JwtTokenProvider jwtTokenProvider;
     private final ObjectMapper objectMapper;
@@ -31,19 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain)
             throws ServletException, IOException {
-
-        String uri = request.getRequestURI();
-        String method = request.getMethod();
-
-        // 인증 제외 경로 처리
-        if (uri.equals("/api/auth/login") ||
-                uri.equals("/api/auth/refresh") ||
-                (method.equals("POST") && uri.equals("/api/users")) ||
-                uri.startsWith("/swagger-ui") ||
-                uri.startsWith("/v3/api-docs")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
 
         String bearer = request.getHeader("Authorization");
 
@@ -62,18 +53,32 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             filterChain.doFilter(request, response);
-
         } catch (InvalidTokenException | ExpiredTokenException | TokenTypeMismatchException e) {
             setErrorResponse(response, ErrorCode.INVALID_TOKEN, e.getMessage());
         } catch (TokenMissingException e) {
             setErrorResponse(response, ErrorCode.TOKEN_MISSING, e.getMessage());
         } catch (Exception e) {
-            setErrorResponse(response, ErrorCode.I_DONT_KNOW, "예상치 못한 인증 오류");
+            setErrorResponse(response, ErrorCode.I_DONT_KNOW, "예상하지 못한 인증 오류");
         }
-
     }
 
-    private void setErrorResponse(HttpServletResponse response, ErrorCode errorCode, String message) throws IOException {
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+
+        if (request.getMethod().equals("POST") && uri.equals("/api/users")) {
+            return true;
+        }
+
+        return Arrays.stream(AuthWhitelist.NO_AUTH_PATHS)
+                .anyMatch(pattern -> PATH_MATCHER.match(pattern, uri));
+    }
+
+    private void setErrorResponse(
+            HttpServletResponse response,
+            ErrorCode errorCode,
+            String message
+    ) throws IOException {
         response.setStatus(errorCode.getHttpStatus().value());
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");

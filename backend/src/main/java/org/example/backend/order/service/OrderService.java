@@ -36,9 +36,15 @@ public class OrderService {
 
     public OrderCreateResponseDto createOrder(OrderCreateRequestDto dto) {
         User user = getCurrentUser();
-        BigDecimal price = orderExecutionUtil.determineOrderPrice(dto);
         realTimePriceService.subscribe(dto.getCoinSymbol());
+        BigDecimal price = orderExecutionUtil.determineOrderPrice(dto);
         Order order = buildOrder(dto, user, price);
+
+        if (dto.getOrderMethod() == OrderMethod.MARKET) {
+            executeOrder(user, order);
+            order.markAsCompleted();
+        }
+
         return toCreateResponseDto(orderRepository.save(order));
     }
 
@@ -73,18 +79,23 @@ public class OrderService {
         List<OrderHistoryResponseDto> resolved = new ArrayList<>();
 
         for (Order order : pendingOrders) {
-            BigDecimal currentPrice = realTimePriceService.getCurrentPrice(order.getCoinSymbol());
+            BigDecimal currentPrice = realTimePriceService.findCurrentPrice(order.getCoinSymbol())
+                    .orElse(null);
             if (orderExecutionUtil.isExecutable(order.getOrderMethod(), order.getOrderType(), order.getPrice(), currentPrice)) {
-                if (order.getOrderType() == OrderType.BUY) {
-                    orderExecutionUtil.executeBuy(user, order);
-                } else {
-                    orderExecutionUtil.executeSell(user, order);
-                }
+                executeOrder(user, order);
                 order.markAsCompleted();
                 resolved.add(toHistoryResponseDto(order));
             }
         }
         return resolved;
+    }
+
+    private void executeOrder(User user, Order order) {
+        if (order.getOrderType() == OrderType.BUY) {
+            orderExecutionUtil.executeBuy(user, order);
+        } else {
+            orderExecutionUtil.executeSell(user, order);
+        }
     }
 
     private User getCurrentUser() {

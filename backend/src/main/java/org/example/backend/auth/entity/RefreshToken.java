@@ -19,7 +19,7 @@ public class RefreshToken {
     @Column(name = "jti", nullable = false, updatable = false)
     private String jti;           // JWT ID (UUID)
 
-    @Column(name = "email", nullable = false, length = 255)
+    @Column(name = "email", nullable = false, length = 25)
     private String email;         // 사용자 식별자 (이메일)
 
     @Column(name = "expiry_date", nullable = false)

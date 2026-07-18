@@ -24,16 +24,16 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
-    @Column(name = "user_name", nullable  = false)
+    @Column(name = "user_name", nullable = false, length = 10)
     private String username;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, length = 25)
     private String email;
 
-    @Column(name = "phone_number", unique = true, nullable = false)
+    @Column(name = "phone_number", unique = true, nullable = false, length = 13)
     private String phoneNumber;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String password;
 
     @Column(name = "registered_at", nullable = false, updatable = false)
@@ -43,7 +43,7 @@ public class User {
     private BigDecimal krwBalance;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 20)
     private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

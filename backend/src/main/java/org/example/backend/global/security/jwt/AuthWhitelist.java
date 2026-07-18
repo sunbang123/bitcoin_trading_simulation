@@ -5,6 +5,7 @@ public class AuthWhitelist {
             "/api/auth/login",
             "/api/auth/refresh",
             "/api/rankings",
+            "/api/markets/**",
             "/swagger-ui/**",
             "/v3/api-docs/**",
     };

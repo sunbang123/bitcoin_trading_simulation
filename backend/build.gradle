@@ -25,6 +25,7 @@ dependencies {
 
 	// MySQL 드라이버 (DB 연결용)
 	implementation 'com.mysql:mysql-connector-j'
+	runtimeOnly 'org.postgresql:postgresql'
 
 	// (선택) Lombok - Getter/Setter 자동화용
 	compileOnly 'org.projectlombok:lombok'

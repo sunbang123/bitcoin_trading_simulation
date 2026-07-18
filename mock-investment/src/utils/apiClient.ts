@@ -1,4 +1,21 @@
 import { authService } from '@/services/authService';
+import { API_BASE_URL } from '@/config/api';
+
+interface ErrorResponse {
+  code?: string;
+  message?: string;
+}
+
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number,
+    public readonly code?: string,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
 
 class ApiClient {
   private baseURL: string;
@@ -62,7 +79,12 @@ class ApiClient {
     }
 
     if (!response.ok) {
-      throw new Error(`API call failed: ${response.statusText}`);
+      const error = await response.json().catch(() => null) as ErrorResponse | null;
+      throw new ApiError(
+        error?.message || `요청에 실패했습니다. (${response.status})`,
+        response.status,
+        error?.code,
+      );
     }
 
     if (response.status === 204) {
@@ -96,5 +118,5 @@ class ApiClient {
 }
 
 export const apiClient = new ApiClient(
-  process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080'
+  API_BASE_URL
 );
